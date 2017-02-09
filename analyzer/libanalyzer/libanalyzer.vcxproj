@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\info\info.h" />
+    <ClInclude Include="include\config.h" />
+    <ClInclude Include="include\proto\analyzer.pb.h" />
+    <ClInclude Include="include\recorder\recorder.h" />
+    <ClInclude Include="include\utils\color_print.h" />
+    <ClInclude Include="include\utils\filestream.h" />
+    <ClInclude Include="include\utils\filesystem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="include\proto\analyzer.pb.cc" />
+    <ClCompile Include="src\info\info.cpp" />
+    <ClCompile Include="src\info\info_cluster.cpp" />
+    <ClCompile Include="src\info\info_data.cpp" />
+    <ClCompile Include="src\info\info_distance.cpp" />
+    <ClCompile Include="src\info\info_print.cpp" />
+    <ClCompile Include="src\info\info_seq.cpp" />
+    <ClCompile Include="src\info\info_stat.cpp" />
+    <ClCompile Include="src\info\info_stat_kernel.cpp" />
+    <ClCompile Include="src\recorder\parse_caffepro.cpp" />
+    <ClCompile Include="src\recorder\recorder.cpp" />
+    <ClCompile Include="src\recorder\recorder_data.cpp" />
+    <ClCompile Include="src\utils\filesystem.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{31C10E46-2327-411F-8B3F-D3995DBE1362}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libanalyzer</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v120</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <PlatformToolset>v120</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)dependency\include;$(SolutionDir);$(ProjectDir)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(SolutionDir)\dependency\lib\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)dependency\include;$(SolutionDir);$(ProjectDir)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(SolutionDir)\dependency\lib\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

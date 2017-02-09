@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>-action=index -database=cifar-resnet164 -dbname=sgd-1P4G-1x-1 -db</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>E:\sharing\caffepro_test</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommandArguments>-action=batch -src=records -batchsize=1 -type=cr_norm1 -content=weight -hp=stat_kernel -db -database=cao -dbname=cao</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>E:\sharing\caffepro_test</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>
