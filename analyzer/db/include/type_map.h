@@ -25,7 +25,7 @@ namespace db {
 
 	using TYPE_SEQ = analyzer::Infos::TYPE_SEQ;
 	MAP_TYPE_STATSEQ mapTypeSeq = {
-		{ TYPE_SEQ::HISTOGRAM, "SeqHistogram" },
+		// { TYPE_SEQ::HISTOGRAM, "SeqHistogram" },
 		{ TYPE_SEQ::CHANGERATIO, "SeqChangeRatio" }
 	};
 
@@ -37,7 +37,7 @@ namespace db {
 		{ TYPE_STAT::SUM, "StatSum" },
 		{ TYPE_STAT::VAR, "StatVar" },
 		{ TYPE_STAT::STD, "StatStd" },
-		{ TYPE_STAT::NORM_0, "StatNorm0" },
+		// { TYPE_STAT::NORM_0, "StatNorm0" },
 		{ TYPE_STAT::NORM_1, "StatNorm1" },
 		{ TYPE_STAT::NORM_2, "StatNorm2" },
 		{ TYPE_STAT::QUANTILE_1_2, "StatMid" },
@@ -47,8 +47,11 @@ namespace db {
 
 	using TYPE_STAT_KERNEL = analyzer::Infos::TYPE_STAT_KERNEL;
 	MAP_TYPE_STAT_KERNEL mapTypeStatKernel = {
-		{ TYPE_STAT_KERNEL::CR_NORM_1, "KernelStatCRNorm1" },
-		{ TYPE_STAT_KERNEL::CR_NORM_2, "KernelStatCRNorm2" }
+		{ TYPE_STAT_KERNEL::CR_NORM_1, "KernelCRNorm1" },
+		{ TYPE_STAT_KERNEL::CR_NORM_2, "KernelCRNorm2" },
+		{ TYPE_STAT_KERNEL::W_STD, "KernelWeightStd" },
+		{ TYPE_STAT_KERNEL::G_NORM_1, "KernelGradNorm1" },
+		{ TYPE_STAT_KERNEL::G_NORM_2, "KernelGradNorm2" }
 	};
 
 	using TYPE_DISTANCE = analyzer::Infos::TYPE_DISTANCE;

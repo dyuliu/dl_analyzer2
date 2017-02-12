@@ -71,12 +71,14 @@ namespace analyzer {
 					ptr->set_value(emath::var(ArrayToVector(info.layers(i).weight())));
 			}
 
+			/*
 			if (stat_type == TYPE_STAT::NORM_0) {
 				if (data_content == TYPE_CONTENT::GRAD)
 					ptr->set_value(emath::norm(ArrayToVector(info.layers(i).grad()), 0));
 				if (data_content == TYPE_CONTENT::WEIGHT)
 					ptr->set_value(emath::norm(ArrayToVector(info.layers(i).weight()), 0));
 			}
+			*/
 
 			if (stat_type == TYPE_STAT::NORM_1) {
 				if (data_content == TYPE_CONTENT::GRAD)

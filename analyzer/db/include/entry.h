@@ -89,9 +89,9 @@ namespace db {
 		/*8
 		Import img info including class_name & data (file) name
 		*/
-		void importImgInfo(std::string colName = "TrainImgInfo");
+		void importImgInfo(std::string colName = "ImgTrainInfo");
 
-		void importTestImgInfo(int batchsize = 1000, std::string colName = "TestImgInfo");
+		void importTestImgInfo(std::map<std::string, int> &map_label, int batchsize = 1000, std::string colName = "ImgTestInfo");
 
 		/**
 		Import all stats and layer attrs

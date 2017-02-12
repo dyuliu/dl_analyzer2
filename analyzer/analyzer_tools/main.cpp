@@ -287,11 +287,7 @@ static inline void analyzer_batch(std::vector<Infos> &batch_infos) {
 			if (idx == 0) {
 				__FUNC_TIME_CALL(info.compute_stat_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
 				__FUNC_TIME_CALL(info.compute_seq_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
-				// __FUNC_TIME_CALL(info.compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
-
-				// compute all distance
-				if (batch_size > 1)
-					analyzer_batch_distance(batch_infos);
+				__FUNC_TIME_CALL(info.compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
 			}
 		}
 		else {
@@ -411,9 +407,11 @@ void analyzer_test_recorder() {
 		throw("Error: Missing folder path!");
 	auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
 
+	// previous label
+	std::map<std::string, int> map_label;
+	bool first = true;
 	for (int i = 0; i < files.size(); i++) {
 		COUT_CHEK << "Test img info: " << files[i] << ", ratio:" << 100 * (i+1) / float(files.size()) << std::endl;
-
 		analyzer::Images img_info;
 
 		std::string filename = files[i];
@@ -424,9 +422,14 @@ void analyzer_test_recorder() {
 		img_info.ParseFromCodedStream(&code_input);
 		fp.close();
 
+
+		if (first) {
+			for (int j = 0; j < img_info.images_size(); j++) { map_label[img_info.images(j).file_name()] = -1; }
+			first = false;
+		}
 		if (FLAGS_db) {
 			dbInstance->bindImgInfo(&img_info);
-			dbInstance->importTestImgInfo(FLAGS_imgbatch);
+			dbInstance->importTestImgInfo(map_label, FLAGS_imgbatch);
 		}
 		else {
 			std::cout << "iteration: " << img_info.iteration() << ";  img_num: "

@@ -18,7 +18,7 @@ namespace analyzer {
 			SUM		= 3U,
 			VAR		= 4U,
 			STD		= 5U,
-			NORM_0	= 6U,
+			// NORM_0	= 6U,
 			NORM_1	= 7U,
 			NORM_2	= 8U,
 			QUANTILE_1_2 = 9U,
@@ -30,12 +30,15 @@ namespace analyzer {
 		enum class TYPE_STAT_KERNEL : unsigned int {
 			CR_NORM_1 = 0U,
 			CR_NORM_2 = 1U,
+			W_STD = 2U,
+			G_NORM_1 = 3U,
+			G_NORM_2 = 4U,
 			END
 		};
 
 		enum class TYPE_SEQ : unsigned int {
-			HISTOGRAM = 0U,
-			CHANGERATIO = 1U,
+			CHANGERATIO = 0U,
+			// HISTOGRAM = 1U,
 			END
 		};
 

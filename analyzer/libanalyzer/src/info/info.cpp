@@ -51,7 +51,7 @@ namespace analyzer {
 			{ TYPE_STAT::SUM,	  "sum" },
 			{ TYPE_STAT::VAR,	  "var" },
 			{ TYPE_STAT::STD,	  "std" },
-			{ TYPE_STAT::NORM_0,  "norm0" },
+			// { TYPE_STAT::NORM_0,  "norm0" },
 			{ TYPE_STAT::NORM_1,  "norm1" },
 			{ TYPE_STAT::NORM_2,  "norm2" },
 			{ TYPE_STAT::QUANTILE_1_2, "mid" },
@@ -60,7 +60,7 @@ namespace analyzer {
 		};
 
 		name_seq_type = std::map<TYPE_SEQ, std::string> {
-			{ TYPE_SEQ::HISTOGRAM,  "histogram"},
+			// { TYPE_SEQ::HISTOGRAM,  "histogram"},
 			{ TYPE_SEQ::CHANGERATIO, "changeratio" }
 		};
 
@@ -70,7 +70,11 @@ namespace analyzer {
 
 		name_stat_kernel_type = std::map<TYPE_STAT_KERNEL, std::string> {
 			{ TYPE_STAT_KERNEL::CR_NORM_1, "cr_norm1"},
-			{ TYPE_STAT_KERNEL::CR_NORM_2, "cr_norm2"}
+			{ TYPE_STAT_KERNEL::CR_NORM_2, "cr_norm2"},
+			{ TYPE_STAT_KERNEL::W_STD, "w_std" },
+			{ TYPE_STAT_KERNEL::G_NORM_1, "g_norm1" },
+			{ TYPE_STAT_KERNEL::G_NORM_2, "g_norm2" }
+
 		};
 	}
 
@@ -90,7 +94,7 @@ namespace analyzer {
 					ptr->set_type(name_distance_type[(TYPE_DISTANCE)j].c_str());
 					ptr->set_content(name_content_type[(TYPE_CONTENT)idx].c_str());
 				}
-				for (int j = (int)TYPE_SEQ::HISTOGRAM; j < (int)TYPE_SEQ::END; j++) {
+				for (int j = (int)TYPE_SEQ::CHANGERATIO; j < (int)TYPE_SEQ::END; j++) {
 					auto ptr = info.mutable_layers(i)->add_seq();
 					ptr->set_value(0.0);
 					ptr->set_type(name_seq_type[(TYPE_SEQ)j].c_str());
@@ -156,7 +160,7 @@ namespace analyzer {
 				}
 			}
 			else if (hp == HyperParam::SEQ) {
-				for (int j = (int)TYPE_SEQ::HISTOGRAM; j < (int)TYPE_SEQ::END; j++) {
+				for (int j = (int)TYPE_SEQ::CHANGERATIO; j < (int)TYPE_SEQ::END; j++) {
 					auto idx = index((TYPE_SEQ)j, content_type);
 					info.mutable_layers(i)->mutable_seq(idx)->CopyFrom(other.get().layers(i).seq(idx));
 				}

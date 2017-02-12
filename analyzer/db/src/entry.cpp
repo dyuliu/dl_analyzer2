@@ -314,7 +314,7 @@ namespace db {
 		this->connection.insert(col, o);
 	}
 
-	void DB::importTestImgInfo(int batchsize, std::string colName) {
+	void DB::importTestImgInfo(std::map<std::string, int> &map_label, int batchsize, std::string colName) {
 		// do something
 		std::string col = this->database + "." + this->dbName + "_" + colName;
 		Images *data = this->imgData;
@@ -326,14 +326,25 @@ namespace db {
 			BSONArrayBuilder file;
 			BSONArrayBuilder label;
 			BSONArrayBuilder answer;
+			BSONArrayBuilder event;  // 4 dimension
+			int eventArr[4] = { 0, 0, 0, 0 };  // n to y, y to n, y to y, n to n  
+
 			// BSONArrayBuilder prob;
 
 			for (int j = i; j < i + batchsize; j++) {
+				int correct_label = data->images(j).label_id();
+				int cur_label = data->images(j).answer();
+				int pre_label = map_label[data->images(j).file_name()];
 				cls.append(data->images(j).class_name());
-				label.append(data->images(j).label_id());
+				label.append(correct_label);
 				file.append(data->images(j).file_name());
-				answer.append(data->images(j).answer());
-				BSONArrayBuilder probArr;
+				answer.append(cur_label);
+				if (cur_label == correct_label && pre_label != correct_label) { eventArr[0]++; }
+				if (cur_label != correct_label && pre_label == correct_label) { eventArr[1]++; }
+				if (cur_label == correct_label && pre_label == correct_label) { eventArr[2]++; }
+				if (cur_label != correct_label && pre_label != correct_label) { eventArr[3]++; }
+				map_label[data->images(j).file_name()] = cur_label;
+				// BSONArrayBuilder probArr;
 				// for (int k = 0; k < data->images(j).prob_size(); k++) { probArr.append(data->images(j).prob(k)); }
 				// prob.append(probArr.arr());
 			}
@@ -341,6 +352,8 @@ namespace db {
 			bObj.append("file", file.arr());
 			bObj.append("label", label.arr());
 			bObj.append("answer", answer.arr());
+			for (int ei = 0; ei < 4; ei++) { event.append(eventArr[ei]); }
+			bObj.append("event", event.arr());
 			// bObj.append("prob", prob.arr());
 			bs++;
 
@@ -363,10 +376,11 @@ namespace db {
 			return;
 		}
 		if (colName == "") {
-			colName = iterContent->second + iterStat->second;
+			colName = iterStat->second;
 		}
+		
 		std::string col = this->database + "." + this->dbName + "_" + colName;
-		std::cout << "Importing data to \""<< col << "\"." << std::endl;
+		// std::cout << "Importing data to \""<< col << "\"." << std::endl;
 
 		Info *data = this->iData;
 		BulkOperationBuilder bulk = this->connection.initializeUnorderedBulkOp(col);
@@ -402,7 +416,7 @@ namespace db {
 		this->importAllSeqs();
 		// this->importAllDists();
 		this->importImgInfo();
-		// this->importAllStatsKernel();
+		this->importAllStatsKernel();
 	}
 
 	void DB::importLayerAttrs(std::string colName) {
@@ -538,47 +552,47 @@ namespace db {
 		
 		std::cout << "Creating Indexes " << this->dbName << std::endl;
 		std::string col;
-		for (auto it = mapTypeRecord.begin(); it != mapTypeRecord.end(); ++it) {
-			col = this->database + "." + this->dbName + "_" + it->second;
-			std::cout << "Creating Index on " << col << std::endl;
-			this->connection.createIndex(col, fromjson("{iter:1}"));
-		}
-		
-		for (auto it = mapTypeStat.begin(); it != mapTypeStat.end(); ++it) {
-			col = this->database + "." + this->dbName + "_Grad" + it->second;
-			std::cout << "Creating Index on " << col << std::endl;
-			this->connection.createIndex(col, fromjson("{iter:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
+		//for (auto it = mapTypeRecord.begin(); it != mapTypeRecord.end(); ++it) {
+		//	col = this->database + "." + this->dbName + "_" + it->second;
+		//	std::cout << "Creating Index on " << col << std::endl;
+		//	this->connection.createIndex(col, fromjson("{iter:1}"));
+		//}
+		//
+		//for (auto it = mapTypeStat.begin(); it != mapTypeStat.end(); ++it) {
+		//	col = this->database + "." + this->dbName + "_Grad" + it->second;
+		//	std::cout << "Creating Index on " << col << std::endl;
+		//	this->connection.createIndex(col, fromjson("{iter:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
 
-			col = this->database + "." + this->dbName + "_Weight" + it->second;
-			std::cout << "Creating Index on " << col << std::endl;
-			this->connection.createIndex(col, fromjson("{iter:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
-		}
+		//	col = this->database + "." + this->dbName + "_Weight" + it->second;
+		//	std::cout << "Creating Index on " << col << std::endl;
+		//	this->connection.createIndex(col, fromjson("{iter:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
+		//}
 
-		for (auto it = mapTypeSeq.begin(); it != mapTypeSeq.end(); ++it) {
-			col = this->database + "." + this->dbName + "_Grad" + it->second;
-			std::cout << "Creating Index on " << col << std::endl;
-			this->connection.createIndex(col, fromjson("{iter:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
+		//for (auto it = mapTypeSeq.begin(); it != mapTypeSeq.end(); ++it) {
+		//	/*col = this->database + "." + this->dbName + "_Grad" + it->second;
+		//	std::cout << "Creating Index on " << col << std::endl;
+		//	this->connection.createIndex(col, fromjson("{iter:1}"));*/
+		//	//this->connection.createIndex(col, fromjson("{wid:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
 
-			col = this->database + "." + this->dbName + "_Weight" + it->second;
-			std::cout << "Creating Index on " << col << std::endl;
-			this->connection.createIndex(col, fromjson("{iter:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1}"));
-			//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
-		}
+		//	col = this->database + "." + this->dbName + "_Weight" + it->second;
+		//	std::cout << "Creating Index on " << col << std::endl;
+		//	this->connection.createIndex(col, fromjson("{iter:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1}"));
+		//	//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
+		//}
 
-		for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
-			col = this->database + "." + this->dbName + "_Weight" + it->second;
-			std::cout << "Creating Index on " << col << std::endl;
-			this->connection.createIndex(col, fromjson("{iter:1}"));
-			this->connection.createIndex(col, fromjson("{lid:1}"));
-			this->connection.createIndex(col, fromjson("{iter: 1, lid:1}"));
-		}
+		//for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
+		//	col = this->database + "." + this->dbName + "_" + it->second;
+		//	std::cout << "Creating Index on " << col << std::endl;
+		//	this->connection.createIndex(col, fromjson("{iter:1}"));
+		//	this->connection.createIndex(col, fromjson("{lid:1}"));
+		//	// this->connection.createIndex(col, fromjson("{iter: 1, lid:1}"));
+		//}
 
 
 		//std::vector<std::string> names = { "WeightRaw", "GradRaw" };
@@ -592,11 +606,11 @@ namespace db {
 		//}
 
 
-		col = this->database + "." + this->dbName + "_TrainImgInfo";
-		std::cout << "Creating Index on " << col << std::endl;
-		this->connection.createIndex(col, fromjson("{iter:1}"));
+		//col = this->database + "." + this->dbName + "_ImgTrainInfo";
+		//std::cout << "Creating Index on " << col << std::endl;
+		//this->connection.createIndex(col, fromjson("{iter:1}"));
 
-		col = this->database + "." + this->dbName + "_TestImgInfo";
+		col = this->database + "." + this->dbName + "_ImgTestInfo";
 		std::cout << "Creating Index on " << col << std::endl;
 		this->connection.createIndex(col, fromjson("{iter:1}"));
 		this->connection.createIndex(col, fromjson("{iter:1, batch:1}"));
@@ -658,6 +672,12 @@ namespace db {
 			this->connection.dropCollection(col);
 		}
 
+		for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
+			col = this->database + "." + this->dbName + "_" + it->second;
+			std::cout << "Deleting collection " << col << std::endl;
+			this->connection.dropCollection(col);
+		}
+
 
 		/*
 		for (auto it = mapTypeDist.begin(); it != mapTypeDist.end(); ++it) {
@@ -684,9 +704,9 @@ namespace db {
 		}
 		*/
 
-		col = this->database + "." + this->dbName = "_TrainImgInfo";
+		col = this->database + "." + this->dbName + "_" + "ImgTrainInfo";
 		this->connection.dropCollection(col);
-		col = this->database + "." + this->dbName = "_TestImgInfo";
+		col = this->database + "." + this->dbName + "_" + "ImgTestInfo";
 		this->connection.dropCollection(col);
 	}
 

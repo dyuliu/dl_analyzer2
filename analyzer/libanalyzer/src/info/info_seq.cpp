@@ -50,6 +50,7 @@ namespace analyzer {
 				}
 			}
 
+			/*
 			if (seq_type == TYPE_SEQ::HISTOGRAM) {
 				ret_data.resize(NUM_HISTOGRAM_BINS);
 				if (data_content == TYPE_CONTENT::GRAD)
@@ -57,6 +58,7 @@ namespace analyzer {
 				if (data_content == TYPE_CONTENT::WEIGHT)
 					ret_data = emath::histogram(ArrayToVector(info.layers(i).weight()), NUM_HISTOGRAM_BINS);
 			}
+			*/
 
 			// copy to data
 			for (auto val : ret_data) {
@@ -71,7 +73,7 @@ namespace analyzer {
 		COUT_METD << "func: compute_all_seq" << std::endl;
 #endif
 
-		for (unsigned int j = (int)TYPE_SEQ::HISTOGRAM; j < (int)TYPE_SEQ::END; j++) {
+		for (unsigned int j = (int)TYPE_SEQ::CHANGERATIO; j < (int)TYPE_SEQ::END; j++) {
 #ifdef __DEBUG_INFO_OUTPUT
 			__FUNC_TIME_CALL(compute_seq((TYPE_SEQ)j, data_content), name_seq_type[(TYPE_SEQ)j]);
 #else
