@@ -7,7 +7,7 @@ from pymongo.errors import BulkWriteError
 
 class DB:
 
-    def __init__(self, db_ = 'final', col_ = 'imagenet-2x-lr2_ImgTestInfo', address = 'localhost', port = 27017 ):
+    def __init__(self, db_ = 'final', col_ = 'imagenet-1x-lr2_ImgTestInfo', address = 'localhost', port = 27017 ):
         client = MongoClient(address, port)
         self.db = client[db_]
         self.col = client[db_][col_]
@@ -22,7 +22,7 @@ class DB:
     def insert(self, col, data):
         self.db[col].insert({'value': 1})
 
-    def writeBulk(self, col, data, type = 'unordered'):
+    def writeBulk(self, data, col, type = 'unordered'):
         # init
         if type == 'unordered':
             bulk = self.db[col].initialize_unordered_bulk_op()
@@ -30,14 +30,27 @@ class DB:
             bulk = self.db[col].initialize_ordered_bulk_op()
 
         # do insertion
-        bulk.insert({'value': 1})
-        bulk.insert({'value': 2})
-
-        # execute operation
-        try:
+        i = 0
+        batch = 50
+        finished = False
+        while i < len(data):
+            bulk.insert(data[i])
+            finished = False
+            if (i % batch == 0):
+                print ('insert ', i)
+                try:
+                    bulk.execute()
+                    finished = True
+                except BulkWriteError as bwe:
+                    pprint(bwe.details)
+                if type == 'unordered':
+                    bulk = self.db[col].initialize_unordered_bulk_op()
+                elif type == 'ordered':
+                    bulk = self.db[col].initialize_ordered_bulk_op()
+            i += 1
+        if (not finished):
             bulk.execute()
-        except BulkWriteError as bwe:
-            pprint(bwe.details)
+
 
     def createIndex(self, col):
         self.db[col].create_index([('iter', ASCENDING)])
