@@ -38,14 +38,14 @@ def calc(data):
         while j < len(values):
             v = values[j]
             # go left
-            # if ( (i - 1 >= 0) and (v[i - 1] != v[i]) ):
-            #     k = i - 1
-            #     left = max(0, i - step)
-            #     while k >= left:
-            #         if (v[k] == v[i]):
-            #             break;
-            #         bin['left'][i - k - 1] += 1
-            #         k -= 1
+            if ( (i - 1 >= 0) and (v[i - 1] != v[i]) ):
+                k = i - 1
+                left = max(0, i - step)
+                while k >= left:
+                    if (v[k] == v[i]):
+                        break;
+                    bin['left'][i - k - 1] += 1
+                    k -= 1
             # go right
             if ( (i + 1 < length) and (v[i + 1] != v[i])):
                 k = i + 1
@@ -57,12 +57,12 @@ def calc(data):
                     k += 1
             j += 1
 
-        j = step - 2
-        # iterate step to accumulate bin
-        while j >= 0:
-            bin['left'][j] += bin['left'][j+1]
-            bin['right'][j] += bin['right'][j+1]
-            j -= 1
+        # j = step - 2
+        # # iterate step to accumulate bin
+        # while j >= 0:
+        #     bin['left'][j] += bin['left'][j+1]
+        #     bin['right'][j] += bin['right'][j+1]
+        #     j -= 1
 
         res.append(bin)
         i += 1
@@ -72,17 +72,18 @@ def calc(data):
     return res
 
 def disp(data):
-    meanL = [0]*100
-    meanR = [0]*100
-    sumL = [0]*100
-    sumR = [0]*100
-    maxL = [-1]*100
-    maxLi = [-1]*100
-    maxR = [-1]*100
-    maxRi = [-1]*100
+    step = 100
+    meanL = [0]*step
+    meanR = [0]*step
+    sumL = [0]*step
+    sumR = [0]*step
+    maxL = [-1]*step
+    maxLi = [-1]*step
+    maxR = [-1]*step
+    maxRi = [-1]*step
     i = 0
     while i < len(data):
-        for j in range(100):
+        for j in range(step):
             sumL[j] += data[i]['left'][j]
             sumR[j] += data[i]['right'][j]
             if data[i]['left'][j] > maxL[j]:
@@ -92,17 +93,27 @@ def disp(data):
                 maxR[j] = data[i]['right'][j]
                 maxRi[j] = data[i]['iter']
         i += 1
-    for i in range(100):
+    for i in range(step):
         print ('L' + str(i), maxLi[i], sumL[i] / len(data), maxL[i])
-    for i in range(100):
+    for i in range(step):
         print ('R' + str(i), maxRi[i], sumR[i] / len(data), maxR[i])
 
 if __name__ == '__main__':
-    db = DB('final', 'imagenet-1x-lr2_ImgTestInfo')
+    db = DB('final', 'cifar-1x-1_ImgTestInfo')
     data = getData(db)
+    # data = {
+    #     'iters': [0,1,2,3,4,5,6,7,8],
+    #     'img': {
+    #         '1': [0,0,1,1,0,1,0,0,1],
+    #         '2': [0,1,0,1,0,1,1,1,1],
+    #         '3': [0,0,1,1,0,1,0,0,1],
+    #         '4': [0,0,1,1,1,1,1,0,1],
+    #         '5': [0,0,0,0,0,1,0,0,1]
+    #     }
+    # }
     dataToWrite = calc(data)
-    disp(dataToWrite)
-    # db.writeBulk(dataToWrite, 'imagenet-1x-lr2_ImgTestStat')
-    # db.createIndex('imagenet-1x-lr2_ImgTestStat')
+    # disp(dataToWrite)
+    db.writeBulk(dataToWrite, 'cifar-1x-lr2_ImgTestStat')
+    db.createIndex('cifar-1x-lr2_ImgTestStat')
 
 
