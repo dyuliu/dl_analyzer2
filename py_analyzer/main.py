@@ -99,7 +99,7 @@ def disp(data):
         print ('R' + str(i), maxRi[i], sumR[i] / len(data), maxR[i])
 
 if __name__ == '__main__':
-    db = DB('final', 'cifar-1x-1_ImgTestInfo')
+    db = DB('final', 'imagenet-8x-1_ImgTestInfo', 'msraiv', 5000)
     data = getData(db)
     # data = {
     #     'iters': [0,1,2,3,4,5,6,7,8],
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     # }
     dataToWrite = calc(data)
     # disp(dataToWrite)
-    db.writeBulk(dataToWrite, 'cifar-1x-lr2_ImgTestStat')
-    db.createIndex('cifar-1x-lr2_ImgTestStat')
+    db.writeBulk(dataToWrite, 'imagenet-8x-1_ImgTestStat')
+    db.createIndex('imagenet-8x-1_ImgTestStat')
 
 
