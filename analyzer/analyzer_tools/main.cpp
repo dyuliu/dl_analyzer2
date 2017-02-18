@@ -483,6 +483,10 @@ int main(int argc, char *argv[]) {
 			dbInstance->createIndexes();
 		else if (FLAGS_action == "delete")  // delete specified cols
 			dbInstance->deleteDB();
+
+		if (FLAGS_action == "process") {
+			if (FLAGS_type == "ImgTestInfo") { dbInstance->processImgData(); }
+		}
 	}
 
 	gflags::ShutDownCommandLineFlags();

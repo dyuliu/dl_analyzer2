@@ -17,6 +17,19 @@ namespace db {
 	using Info = analyzer::Info;
 	using Recorder = analyzer::Recorder;
 	using Images = analyzer::Images;
+	using std::string;
+	using std::vector;
+	using std::cout;
+	using std::endl;
+
+	struct Img {
+		string file;
+		string cls;
+		int label;
+		vector<int> iter;
+		vector<int> answer;
+		vector<int> correct;
+	};
 
 	class DB {
 
@@ -128,6 +141,8 @@ namespace db {
 		*/
 		void createIndexes();
 		
+		void processImgData();
+
 		void deleteDB();
 
 	// private data
