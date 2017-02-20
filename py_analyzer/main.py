@@ -2,16 +2,16 @@ __author__ = 'dongyu'
 
 # import numpy as np
 from db import DB
-from guppy import hpy
+# from guppy import hpy
 import pprint
 import copy
 from pymongo import ASCENDING, DESCENDING
 
 
 
-def memory():
-    h = hpy()
-    print h.heap()
+# def memory():
+#     h = hpy()
+#     print h.heap()
 
 def fetchDataFromDB(db):
     col = db.getCol();
@@ -50,8 +50,8 @@ def classify(data):
     print 'classified'
     return result
 
-def calcAbnormal(data):
-    print 'start calc abnormal'
+def calcStat(data):
+    print 'start calc stat'
     result = []
     count = 0
     for (key, val) in data['images'].items():
@@ -60,10 +60,12 @@ def calcAbnormal(data):
         size = len(data['iter'])
         while i < size:
             iter = data['iter'][i]
-            tmp = {'cls': key, 'iter': iter, 'abLeft': [0]*step, 'abRight': [0]*step}
+            tmp = {'cls': key, 'iter': iter, 'abLeft': [0]*step, 'abRight': [0]*step, 'testError': 0}
+            correctCount = 0
             for (imgkey, img) in val.items():
                 # calc abnormal left
                 v = img['correct']
+                correctCount += v[i]
                 if ( (i - 1 >= 0) and (v[i - 1] != v[i])):
                     k = i - 1
                     left = max(0, i - step)
@@ -81,6 +83,7 @@ def calcAbnormal(data):
                             break;
                         tmp['abRight'][k - i - 1] += 1
                         k += 1
+            tmp['testError'] = 1 - 1.0 * correctCount / len(val.items())
             result.append(tmp)
             i += 1
         count += 1
@@ -91,13 +94,11 @@ def calcAbnormal(data):
 if __name__ == '__main__':
 
     db = DB('final', 'imagenet-8x-1_ImgTestData', 'localhost', 27017)
-    # data = fetchDataFromDB(db)
-    # data = classify(data)
-    # data = calcAbnormal(data)
-    # db.writeBulk(data, 'imagenet-8x-1_ImgTestStat2', 500)
-    db.createIndex('imagenet-8x-1_ImgTestStat2', 'imgStat')
-
-
+    data = fetchDataFromDB(db)
+    data = classify(data)
+    data = calcStat(data)
+    db.writeBulk(data, 'imagenet-8x-1_ImgTestStat3', 500)
+    db.createIndex('imagenet-8x-1_ImgTestStat3', 'imgStat')
 
     # data = {
     #     'iters': [0,1,2,3,4,5,6,7,8],

@@ -5,7 +5,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommandArguments>-action=process -type=ImgTestInfo -database=final -dbname=imagenet-8x-1 -db</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>E:\sharing\caffepro_test</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>./</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
