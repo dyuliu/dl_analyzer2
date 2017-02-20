@@ -466,7 +466,8 @@ int main(int argc, char *argv[]) {
 
 	// actions in this part are for operations on database
 	if (FLAGS_db) {
-		dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "localhost:27017");
+		//dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "localhost:27017");
+		dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "msraiv:5000");
 		if (FLAGS_action == "recorder")
 			analyzer_recorder();
 		else if (FLAGS_action == "layerinfo")

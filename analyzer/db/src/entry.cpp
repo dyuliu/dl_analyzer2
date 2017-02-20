@@ -716,70 +716,70 @@ namespace db {
 		std::string col = this->database + "." + this->dbName + "_" + "ImgTestInfo";
 		std::string colWrite = this->database + "." + this->dbName + "_" + "ImgTestData";
 		// initialization
-		//COUT_G("initializing") << std::endl;
-		//std::map<string, Img> imgs;
-		//BSONObj b = this->connection.findOne(col, BSONObj());
-		//vector<BSONElement> v_files = b.getField("file").Array();
-		//vector<BSONElement> v_cls = b.getField("cls").Array();
-		//vector<BSONElement> v_label = b.getField("label").Array();
-		//for (int i = 0; i < v_files.size(); i++) {
-		//	auto file = v_files[i].String();
-		//	auto cls = v_cls[i].String();
-		//	auto label = v_label[i].Int();
-		//	vector<int> iter;
-		//	vector<int> answer;
+		COUT_G("initializing") << std::endl;
+		std::map<string, Img> imgs;
+		BSONObj b = this->connection.findOne(col, BSONObj());
+		vector<BSONElement> v_files = b.getField("file").Array();
+		vector<BSONElement> v_cls = b.getField("cls").Array();
+		vector<BSONElement> v_label = b.getField("label").Array();
+		for (int i = 0; i < v_files.size(); i++) {
+			auto file = v_files[i].String();
+			auto cls = v_cls[i].String();
+			auto label = v_label[i].Int();
+			vector<int> iter;
+			vector<int> answer;
 
-		//	struct Img tmp = {
-		//		file,
-		//		cls,
-		//		label,
-		//		iter,
-		//		answer
-		//	};
+			struct Img tmp = {
+				file,
+				cls,
+				label,
+				iter,
+				answer
+			};
 
-		//	imgs[file] = tmp;
-		//}
-		//BSONObj proj = (BSONObjBuilder() << "_id" << 0 << "iter" << 1 << "file" << 1 << "label" << 1 << "answer" << 1).obj();
-		//std::auto_ptr<DBClientCursor> cursor = this->connection.query(col, BSONObj(), 0, 0, &proj);
+			imgs[file] = tmp;
+		}
+		BSONObj proj = (BSONObjBuilder() << "_id" << 0 << "iter" << 1 << "file" << 1 << "label" << 1 << "answer" << 1).obj();
+		std::auto_ptr<DBClientCursor> cursor = this->connection.query(col, BSONObj(), 0, 0, &proj);
 
-		//COUT_G("fetching and processing") << std::endl;
-		//int count = 0;
-		//while (cursor->more()) {
-		//	BSONObj b = cursor->next();
-		//	int iter = b.getIntField("iter");
-		//	vector<BSONElement> v_files = b.getField("file").Array();
-		//	vector<BSONElement> v_labels = b.getField("label").Array();
-		//	vector<BSONElement> v_answers = b.getField("answer").Array();
-		//	for (int i = 0; i < v_files.size(); i++) {
-		//		auto file = v_files[i].String();
-		//		auto answer = v_answers[i].Int();
-		//		imgs[file].iter.push_back(iter);
-		//		imgs[file].answer.push_back(answer);
-		//	}
-		//	if (++count % 50 == 0) { cout << count << endl; }
-		//}
+		COUT_G("fetching and processing") << std::endl;
+		int count = 0;
+		while (cursor->more()) {
+			BSONObj b = cursor->next();
+			int iter = b.getIntField("iter");
+			vector<BSONElement> v_files = b.getField("file").Array();
+			vector<BSONElement> v_labels = b.getField("label").Array();
+			vector<BSONElement> v_answers = b.getField("answer").Array();
+			for (int i = 0; i < v_files.size(); i++) {
+				auto file = v_files[i].String();
+				auto answer = v_answers[i].Int();
+				imgs[file].iter.push_back(iter);
+				imgs[file].answer.push_back(answer);
+			}
+			if (++count % 50 == 0) { cout << count << endl; }
+		}
 
-		//COUT_G("inserting") << std::endl;
-		//// insert data to mongoDB
-		//count = 0;
-		//for (auto iter = imgs.begin(); iter != imgs.end(); iter++) {
-		//	BSONObjBuilder bObj;
-		//	auto o = iter->second;
-		//	bObj.append("file", o.file)
-		//		.append("cls", o.cls)
-		//		.append("label", o.label);
-		//	
-		//	BSONArrayBuilder arrIter;
-		//	for (auto const& d : o.iter) { arrIter.append(d); }
-		//	BSONArrayBuilder arrAnswer;
-		//	for (auto const& d : o.answer) { arrAnswer.append(d); }
+		COUT_G("inserting") << std::endl;
+		// insert data to mongoDB
+		count = 0;
+		for (auto iter = imgs.begin(); iter != imgs.end(); iter++) {
+			BSONObjBuilder bObj;
+			auto o = iter->second;
+			bObj.append("file", o.file)
+				.append("cls", o.cls)
+				.append("label", o.label);
+			
+			BSONArrayBuilder arrIter;
+			for (auto const& d : o.iter) { arrIter.append(d); }
+			BSONArrayBuilder arrAnswer;
+			for (auto const& d : o.answer) { arrAnswer.append(d); }
 
-		//	bObj.append("iter", arrIter.arr())
-		//		.append("answer", arrAnswer.arr());
+			bObj.append("iter", arrIter.arr())
+				.append("answer", arrAnswer.arr());
 
-		//	this->connection.insert(colWrite, bObj.obj());
-		//	if (++count % 1000 == 0) { cout << count << endl; }
-		//}
+			this->connection.insert(colWrite, bObj.obj());
+			if (++count % 1000 == 0) { cout << count << endl; }
+		}
 
 		// create index
 		this->connection.createIndex(colWrite, fromjson("{file:1}"));

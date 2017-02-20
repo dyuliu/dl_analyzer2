@@ -93,12 +93,12 @@ def calcStat(data):
 
 if __name__ == '__main__':
 
-    db = DB('final', 'imagenet-8x-1_ImgTestData', 'localhost', 27017)
+    db = DB('final', 'imagenet-8x-1_ImgTestData', 'msraiv', 5000)
     data = fetchDataFromDB(db)
     data = classify(data)
     data = calcStat(data)
-    db.writeBulk(data, 'imagenet-8x-1_ImgTestStat3', 500)
-    db.createIndex('imagenet-8x-1_ImgTestStat3', 'imgStat')
+    db.writeBulk(data, 'imagenet-8x-1_ImgTestClsStat', 500)
+    db.createIndex('imagenet-8x-1_ImgTestClsStat', 'imgStat')
 
     # data = {
     #     'iters': [0,1,2,3,4,5,6,7,8],
