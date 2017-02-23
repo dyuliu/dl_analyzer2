@@ -41,6 +41,7 @@ class ClusterPoint;
 class Cluster;
 class HyperParameter;
 class Layer;
+class HLayer;
 class Image;
 class Images;
 class Info;
@@ -702,6 +703,118 @@ class Layer : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class HLayer : public ::google::protobuf::Message {
+ public:
+  HLayer();
+  virtual ~HLayer();
+  
+  HLayer(const HLayer& from);
+  
+  inline HLayer& operator=(const HLayer& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const HLayer& default_instance();
+  
+  void Swap(HLayer* other);
+  
+  // implements Message ----------------------------------------------
+  
+  HLayer* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const HLayer& from);
+  void MergeFrom(const HLayer& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  
+  // repeated .analyzer.HyperParameter stat = 10;
+  inline int stat_size() const;
+  inline void clear_stat();
+  static const int kStatFieldNumber = 10;
+  inline const ::analyzer::HyperParameter& stat(int index) const;
+  inline ::analyzer::HyperParameter* mutable_stat(int index);
+  inline ::analyzer::HyperParameter* add_stat();
+  inline const ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >&
+      stat() const;
+  inline ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >*
+      mutable_stat();
+  
+  // repeated .analyzer.HyperParameter seq = 12;
+  inline int seq_size() const;
+  inline void clear_seq();
+  static const int kSeqFieldNumber = 12;
+  inline const ::analyzer::HyperParameter& seq(int index) const;
+  inline ::analyzer::HyperParameter* mutable_seq(int index);
+  inline ::analyzer::HyperParameter* add_seq();
+  inline const ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >&
+      seq() const;
+  inline ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >*
+      mutable_seq();
+  
+  // @@protoc_insertion_point(class_scope:analyzer.HLayer)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::std::string* name_;
+  ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter > stat_;
+  ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter > seq_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
+  friend void  protobuf_AddDesc_analyzer_2eproto();
+  friend void protobuf_AssignDesc_analyzer_2eproto();
+  friend void protobuf_ShutdownFile_analyzer_2eproto();
+  
+  void InitAsDefaultInstance();
+  static HLayer* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class Image : public ::google::protobuf::Message {
  public:
   Image();
@@ -1037,6 +1150,18 @@ class Info : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::analyzer::Layer >*
       mutable_layers();
   
+  // repeated .analyzer.HLayer h_layers = 7;
+  inline int h_layers_size() const;
+  inline void clear_h_layers();
+  static const int kHLayersFieldNumber = 7;
+  inline const ::analyzer::HLayer& h_layers(int index) const;
+  inline ::analyzer::HLayer* mutable_h_layers(int index);
+  inline ::analyzer::HLayer* add_h_layers();
+  inline const ::google::protobuf::RepeatedPtrField< ::analyzer::HLayer >&
+      h_layers() const;
+  inline ::google::protobuf::RepeatedPtrField< ::analyzer::HLayer >*
+      mutable_h_layers();
+  
   // @@protoc_insertion_point(class_scope:analyzer.Info)
  private:
   inline void set_has_filename();
@@ -1057,10 +1182,11 @@ class Info : public ::google::protobuf::Message {
   ::google::protobuf::int32 worker_id_;
   ::analyzer::Images* images_;
   ::google::protobuf::RepeatedPtrField< ::analyzer::Layer > layers_;
+  ::google::protobuf::RepeatedPtrField< ::analyzer::HLayer > h_layers_;
   ::google::protobuf::int32 sim_id_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
   friend void  protobuf_AddDesc_analyzer_2eproto();
   friend void protobuf_AssignDesc_analyzer_2eproto();
@@ -2289,6 +2415,118 @@ Layer::mutable_cluster() {
 
 // -------------------------------------------------------------------
 
+// HLayer
+
+// optional string name = 1;
+inline bool HLayer::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void HLayer::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void HLayer::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void HLayer::clear_name() {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& HLayer::name() const {
+  return *name_;
+}
+inline void HLayer::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void HLayer::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void HLayer::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* HLayer::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* HLayer::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// repeated .analyzer.HyperParameter stat = 10;
+inline int HLayer::stat_size() const {
+  return stat_.size();
+}
+inline void HLayer::clear_stat() {
+  stat_.Clear();
+}
+inline const ::analyzer::HyperParameter& HLayer::stat(int index) const {
+  return stat_.Get(index);
+}
+inline ::analyzer::HyperParameter* HLayer::mutable_stat(int index) {
+  return stat_.Mutable(index);
+}
+inline ::analyzer::HyperParameter* HLayer::add_stat() {
+  return stat_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >&
+HLayer::stat() const {
+  return stat_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >*
+HLayer::mutable_stat() {
+  return &stat_;
+}
+
+// repeated .analyzer.HyperParameter seq = 12;
+inline int HLayer::seq_size() const {
+  return seq_.size();
+}
+inline void HLayer::clear_seq() {
+  seq_.Clear();
+}
+inline const ::analyzer::HyperParameter& HLayer::seq(int index) const {
+  return seq_.Get(index);
+}
+inline ::analyzer::HyperParameter* HLayer::mutable_seq(int index) {
+  return seq_.Mutable(index);
+}
+inline ::analyzer::HyperParameter* HLayer::add_seq() {
+  return seq_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >&
+HLayer::seq() const {
+  return seq_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::analyzer::HyperParameter >*
+HLayer::mutable_seq() {
+  return &seq_;
+}
+
+// -------------------------------------------------------------------
+
 // Image
 
 // optional string class_name = 1;
@@ -2707,6 +2945,31 @@ Info::layers() const {
 inline ::google::protobuf::RepeatedPtrField< ::analyzer::Layer >*
 Info::mutable_layers() {
   return &layers_;
+}
+
+// repeated .analyzer.HLayer h_layers = 7;
+inline int Info::h_layers_size() const {
+  return h_layers_.size();
+}
+inline void Info::clear_h_layers() {
+  h_layers_.Clear();
+}
+inline const ::analyzer::HLayer& Info::h_layers(int index) const {
+  return h_layers_.Get(index);
+}
+inline ::analyzer::HLayer* Info::mutable_h_layers(int index) {
+  return h_layers_.Mutable(index);
+}
+inline ::analyzer::HLayer* Info::add_h_layers() {
+  return h_layers_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::analyzer::HLayer >&
+Info::h_layers() const {
+  return h_layers_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::analyzer::HLayer >*
+Info::mutable_h_layers() {
+  return &h_layers_;
 }
 
 // -------------------------------------------------------------------

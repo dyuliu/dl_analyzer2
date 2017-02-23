@@ -74,7 +74,29 @@ namespace analyzer {
 			{ TYPE_STAT_KERNEL::W_STD, "w_std" },
 			{ TYPE_STAT_KERNEL::G_NORM_1, "g_norm1" },
 			{ TYPE_STAT_KERNEL::G_NORM_2, "g_norm2" }
+		};
 
+		map_layers = std::map<std::string, std::vector<int>> {
+			{ "interstellar2a", { 6, 11, 16, 21 } },
+			{ "interstellar2b", { 26, 31, 36 } },
+			{ "interstellar2c", { 41, 46, 51 } },
+			{ "interstellar3a", { 56, 61, 66, 71 } },
+			{ "interstellar3b", { 76, 81, 86 } },
+			{ "interstellar3c", { 91, 96, 101 } },
+			{ "interstellar3d", { 106, 111, 116 } },
+			{ "interstellar4a", { 121, 126, 131, 136 } },
+			{ "interstellar4b", { 141, 146, 151 } },
+			{ "interstellar4c", { 156, 161, 166 } },
+			{ "interstellar4d", { 171, 176, 181 } },
+			{ "interstellar4e", { 186, 191, 196 } },
+			{ "interstellar4f", { 201, 206, 211 } },
+			{ "interstellar5a", { 216, 221, 226, 231 } },
+			{ "interstellar5b", { 236, 241, 246 } },
+			{ "interstellar5c", { 251, 256, 261 } },
+			{ "conv2", { 6, 11, 16, 21, 26, 31, 36, 41, 46, 51 } },
+			{ "conv3", { 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106, 111, 116 } },
+			{ "conv4", { 121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176, 181, 186, 191, 196, 201, 206, 211 } },
+			{ "conv5", { 216, 221, 226, 231, 236, 241, 246, 251, 256, 261 } }
 		};
 	}
 
@@ -110,6 +132,26 @@ namespace analyzer {
 					auto ptr = info.mutable_layers(i)->add_stat_kernel();
 					ptr->set_value(0.0);
 					ptr->set_type(name_stat_kernel_type[(TYPE_STAT_KERNEL)j].c_str());
+					ptr->set_content(name_content_type[(TYPE_CONTENT)idx].c_str());
+				}
+			}
+		}
+
+		int count = 0;
+		for (auto it = map_layers.begin(); it != map_layers.end(); ++it) {
+			auto l_ptr = info.add_h_layers();
+			l_ptr->set_name(it->first);
+			for (int idx = (int)TYPE_CONTENT::GRAD; idx < (int)TYPE_CONTENT::END; idx++) {
+				for (int j = (int)TYPE_STAT::MAX; j < (int)TYPE_STAT::END; j++) {
+					auto ptr = l_ptr->add_stat();
+					ptr->set_value(0.0);
+					ptr->set_type(name_stat_type[(TYPE_STAT)j].c_str());
+					ptr->set_content(name_content_type[(TYPE_CONTENT)idx].c_str());
+				}
+				for (int j = (int)TYPE_SEQ::CHANGERATIO; j < (int)TYPE_SEQ::END; j++) {
+					auto ptr = l_ptr->add_seq();
+					ptr->set_value(0.0);
+					ptr->set_type(name_seq_type[(TYPE_SEQ)j].c_str());
 					ptr->set_content(name_content_type[(TYPE_CONTENT)idx].c_str());
 				}
 			}

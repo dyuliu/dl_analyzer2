@@ -159,6 +159,7 @@ namespace analyzer {
 		std::map<TYPE_SEQ, std::string> name_seq_type;
 		std::map<TYPE_CLUSTER, std::string> name_cluster_type;
 		std::map<TYPE_STAT_KERNEL, std::string> name_stat_kernel_type;
+		std::map<std::string, std::vector<int>> map_layers;
 
 
 	};

@@ -22,8 +22,8 @@ def fetchDataFromDB(db):
     for d in cursor:
         result['images'].append(d);
         count += 1
-        if (count % 5000 == 0):
-            print count
+        # if (count % 5000 == 0):
+        #     print count
     print 'fetch over'
     return result
 
@@ -45,9 +45,15 @@ def classify(data):
             result['images'][d['cls']][d['file']]['correct'].append(cr)
             j += 1
         i += 1
-        if (i % 5000 == 0):
-            print i
+        # if (i % 5000 == 0):
+        #     print i
     print 'classified'
+    return result
+
+def getClassList(data):
+    result = []
+    for (key, val) in data['images'].items():
+        result.append({'cls': key})
     return result
 
 def calcStat(data):
@@ -87,32 +93,63 @@ def calcStat(data):
             result.append(tmp)
             i += 1
         count += 1
-        print (count, key + ' done')
+        # print (count, key + ' done')
 
+    return result
+
+def aggStat(data):
+    print 'start aggregate stat'
+    result = {}
+    size = len(data)
+    step = 100
+    i = 0
+    while i < size:
+        iter = data[i]['iter']
+        if (not result.has_key(iter)):
+            result[iter] = {'iter': iter, 'abLeft': [0]*step, 'abRight': [0]*step}
+        j = 0
+        while j < step:
+            result[iter]['abLeft'][j] += data[i]['abLeft'][j]
+            result[iter]['abRight'][j] += data[i]['abRight'][j]
+            j += 1
+        i += 1
     return result
 
 if __name__ == '__main__':
 
-    db = DB('final', 'imagenet-8x-1_ImgTestData', 'msraiv', 5000)
-    data = fetchDataFromDB(db)
-    data = classify(data)
-    data = calcStat(data)
-    db.writeBulk(data, 'imagenet-8x-1_ImgTestClsStat', 500)
-    db.createIndex('imagenet-8x-1_ImgTestClsStat', 'imgStat')
+    dbList = [
+        'imagenet-8x-1',
+        'imagenet-2x-lr2',
+        'imagenet-2x-1',
+        'imagenet-1x-m0',
+        'imagenet-1x-lr2',
+        'imagenet-1x-lr0.5',
+        'imagenet-1x-1',
+        'cifar-8x-1',
+        'cifar-4x-1',
+        'cifar-2x-lr2',
+        'cifar-2x-lr0.5',
+        'cifar-2x-1',
+        'cifar-1x-m0',
+        'cifar-1x-lr2',
+        'cifar-1x-lr0.5',
+        'cifar-1x-2',
+        'cifar-1x-1'
+    ]
 
-    # data = {
-    #     'iters': [0,1,2,3,4,5,6,7,8],
-    #     'img': {
-    #         '1': [0,0,1,1,0,1,0,0,1],
-    #         '2': [0,1,0,1,0,1,1,1,1],
-    #         '3': [0,0,1,1,0,1,0,0,1],
-    #         '4': [0,0,1,1,1,1,1,0,1],
-    #         '5': [0,0,0,0,0,1,0,0,1]
-    #     }
-    # }
-    # dataToWrite = calc(data)
-    # disp(dataToWrite)
-    # db.writeBulk(dataToWrite, 'imagenet-8x-1_ImgTestStat')
-    # db.createIndex('imagenet-8x-1_ImgTestStat')
+    for dbname in dbList:
+        print dbname
+        db = DB('final', dbname + '_ImgTestData', 'msraiv', 5000)
+        data = fetchDataFromDB(db)
+        data = classify(data)
 
+        clsList = getClassList(data)
+        db.write(clsList, dbname + '_ClsInfo')
 
+        clsData = calcStat(data)
+        db.write(clsData, dbname + '_ImgTestClsStat')
+        db.createIndex(dbname + '_ImgTestClsStat', 'imgClsStat')
+
+        aggData = aggStat(clsData)
+        db.write(aggData, dbname + '_ImgTestStat')
+        db.createIndex(dbname + '_ImgTestStat', 'imgStat')

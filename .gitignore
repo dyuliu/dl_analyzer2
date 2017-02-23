@@ -61,3 +61,4 @@ Release/
 Debug/
 TEST/
 x64/
+node_modules/

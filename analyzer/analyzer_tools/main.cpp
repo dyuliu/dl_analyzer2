@@ -55,12 +55,6 @@ db::DB *dbInstance;
 using analyzer::Infos;
 using analyzer::Recorders;
 
-void print_info() {
-	CHECK_FLAGS_SRC;
-	Infos info(FLAGS_src);
-	info.print_file_info();
-	// info.print_conv_layer_info();
-}
 
 /**********************************************************************
 * COMMAND:
@@ -287,7 +281,7 @@ static inline void analyzer_batch(std::vector<Infos> &batch_infos) {
 			if (idx == 0) {
 				__FUNC_TIME_CALL(info.compute_stat_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
 				__FUNC_TIME_CALL(info.compute_seq_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
-				__FUNC_TIME_CALL(info.compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
+				// __FUNC_TIME_CALL(info.compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
 			}
 		}
 		else {
@@ -441,14 +435,30 @@ void analyzer_test_recorder() {
 	}
 }
 
+
+void test() {
+	CHECK_FLAGS_SRC;
+	Infos info(FLAGS_src);
+	info.compute_stat_all(Infos::TYPE_CONTENT::GRAD);
+	info.compute_stat_all(Infos::TYPE_CONTENT::WEIGHT);
+	info.compute_seq_all(Infos::TYPE_CONTENT::GRAD);
+	info.compute_seq_all(Infos::TYPE_CONTENT::WEIGHT);
+	system("pause");
+
+	dbInstance->bindInfo(&info.get());
+	dbInstance->importAllStats();
+	dbInstance->importAllSeqs();
+	system("pause");
+}
+
 int main(int argc, char *argv[]) {
 
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
 	// actions in this part are for testing
 	if (!FLAGS_db) {
-		if (FLAGS_action == "single")
-			print_info();
+		if (FLAGS_action == "test")
+			test();
 		else if (FLAGS_action == "stat")
 			analyzer_stat();
 		else if (FLAGS_action == "seq")
@@ -468,7 +478,9 @@ int main(int argc, char *argv[]) {
 	if (FLAGS_db) {
 		//dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "localhost:27017");
 		dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "msraiv:5000");
-		if (FLAGS_action == "recorder")
+		if (FLAGS_action == "test")
+			test();
+		else if (FLAGS_action == "recorder")
 			analyzer_recorder();
 		else if (FLAGS_action == "layerinfo")
 			analyzer_layerinfo();
