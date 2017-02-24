@@ -11,17 +11,17 @@ let cols = [
   'imagenet-1x-m0',
   'imagenet-1x-lr2',
   'imagenet-1x-lr0.5',
-  'imagenet-1x-1',
-  'cifar-8x-1',
-  'cifar-4x-1',
-  'cifar-2x-lr2',
-  'cifar-2x-lr0.5',
-  'cifar-2x-1',
-  'cifar-1x-m0',
-  'cifar-1x-lr2',
-  'cifar-1x-lr0.5',
-  'cifar-1x-2',
-  'cifar-1x-1'
+  // 'imagenet-1x-1',
+  // 'cifar-8x-1',
+  // 'cifar-4x-1',
+  // 'cifar-2x-lr2',
+  // 'cifar-2x-lr0.5',
+  // 'cifar-2x-1',
+  // 'cifar-1x-m0',
+  // 'cifar-1x-lr2',
+  // 'cifar-1x-lr0.5',
+  // 'cifar-1x-2',
+  // 'cifar-1x-1'
 ];
 let globalData;
 

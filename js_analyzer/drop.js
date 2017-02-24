@@ -5,23 +5,23 @@ let _ = require('lodash');
 let client = mongodb.MongoClient;
 let url = 'mongodb://msraiv:5000/final';
 let cols = [
-  'imagenet-8x-1',
-  'imagenet-2x-lr2',
-  'imagenet-2x-1',
-  'imagenet-1x-m0',
-  'imagenet-1x-lr2',
-  'imagenet-1x-lr0.5',
+  // 'imagenet-8x-1',
+  // 'imagenet-2x-lr2',
+  // 'imagenet-2x-1',
+  // 'imagenet-1x-m0',
+  // 'imagenet-1x-lr2',
+  // 'imagenet-1x-lr0.5',
   'imagenet-1x-1',
-  'cifar-8x-1',
-  'cifar-4x-1',
-  'cifar-2x-lr2',
-  'cifar-2x-lr0.5',
-  'cifar-2x-1',
-  'cifar-1x-m0',
-  'cifar-1x-lr2',
-  'cifar-1x-lr0.5',
-  'cifar-1x-2',
-  'cifar-1x-1'
+  // 'cifar-8x-1',
+  // 'cifar-4x-1',
+  // 'cifar-2x-lr2',
+  // 'cifar-2x-lr0.5',
+  // 'cifar-2x-1',
+  // 'cifar-1x-m0',
+  // 'cifar-1x-lr2',
+  // 'cifar-1x-lr0.5',
+  // 'cifar-1x-2',
+  // 'cifar-1x-1'
 ];
 let globalData;
 
@@ -41,11 +41,16 @@ function act(db, idx, cb) {
   console.log(cols[idx]);
   let col = db.collection(cols[idx] + '_' + 'ClsInfo');
   col.drop(function(err, res) {
-    if (err) {
-      console.log(err);
-    } else {
-      idx += 1;
-      if (idx < cols.length) { act(db, idx, cb); } else { cb('done'); }
-    }
+    col = db.collection(cols[idx] + '_' + 'ImgTestClsStat');
+    col.drop(function(err, res) {
+      col = db.collection(cols[idx] + '_' + 'ImgTestStat');
+      col.drop(function(err, res) {
+        col = db.collection(cols[idx] + '_' + 'ImgTestData');    // back up
+        col.drop(function(err, res) {
+          idx += 1;
+          if (idx < cols.length) { act(db, idx, cb); } else { cb('done'); }
+        });
+      })
+    });
   });
 }
