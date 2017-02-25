@@ -90,7 +90,7 @@ namespace db {
 		/**
 		Import all kernel ralted stats
 		*/
-		void importStatKernel(analyzer::Infos::TYPE_STAT_KERNEL statName, analyzer::Infos::TYPE_CONTENT contentName, std::string colName = "");
+		void importStatKernel(analyzer::Infos::TYPE_STAT_KERNEL statName, analyzer::Infos::TYPE_CONTENT contentName, std::string type = "stat");
 
 		void importAllStatsKernel();
 
@@ -142,6 +142,8 @@ namespace db {
 		void createIndexes();
 		
 		void processImgData();
+
+		void fetchTestIterSet(std::vector<int>& v);
 
 		void deleteDB();
 

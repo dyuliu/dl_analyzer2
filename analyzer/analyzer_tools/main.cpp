@@ -53,6 +53,7 @@ DEFINE_string(database, "", "database name");
 db::DB *dbInstance;
 
 using analyzer::Infos;
+using analyzer::Info;
 using analyzer::Recorders;
 
 
@@ -393,6 +394,37 @@ void analyzer_raw_batch() {
 	}
 }
 
+
+void analyzer_kernel_batch() {
+	CHECK_FLAGS_SRC;
+	if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
+		throw("Error: Missing folder path!");
+	auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
+	std::cout << "total file number: " << files.size() << std::endl;
+	
+	std::set<int> iterSet;
+	std::vector<int> iters;
+	dbInstance->fetchTestIterSet(iters);
+	for (auto &iter : iters) {
+		iterSet.insert(iter);
+	}
+	std::shared_ptr<Infos> pre_info(new Infos(files[0]));
+	std::shared_ptr<Infos> cur_info;
+	for (int i = 1; i < files.size(); i += 1) {
+		int num = std::stoi(files[i].substr(files[i].length() - 17, 8));
+		if (iterSet.find(num) == iterSet.end()) continue;
+		COUT_CHEK << "Kernel - Filename: " << files[i] << ", ratio:" << 100 * (i + 1) / float(files.size()) << std::endl;
+		cur_info.reset(new Infos(files[i]));
+		cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT, pre_info->get());
+
+		dbInstance->bindInfo(&cur_info->get());
+		dbInstance->importAllStatsKernel();
+
+		pre_info = cur_info;
+	}
+	system("pause");
+
+}
 void analyzer_test_recorder() {
 	CHECK_FLAGS_SRC;
 	CHECK_FLAGS_IMGBATCH;
@@ -492,6 +524,8 @@ int main(int argc, char *argv[]) {
 			analyzer_test_recorder();
 		else if (FLAGS_action == "cluster_batch")
 			analyzer_cluster_batch();
+		else if (FLAGS_action == "kernel_batch")
+			analyzer_kernel_batch();
 		else if (FLAGS_action == "index")   // create index for each cols
 			dbInstance->createIndexes();
 		else if (FLAGS_action == "delete")  // delete specified cols

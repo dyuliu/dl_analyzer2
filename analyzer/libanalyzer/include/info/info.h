@@ -1,8 +1,10 @@
 
 #pragma once
 
+
 #include <proto/analyzer.pb.h>
 #include <config.h>
+#include <memory>
 #include <map>
 
 namespace analyzer {
@@ -28,11 +30,16 @@ namespace analyzer {
 		};
 
 		enum class TYPE_STAT_KERNEL : unsigned int {
-			CR_NORM_1 = 0U,
+			CR_NORM_1 = 0U,  // cr for change ratio
 			CR_NORM_2 = 1U,
-			W_STD = 2U,
-			G_NORM_1 = 3U,
+			W_STD = 2U,		 // w for weight
+			G_NORM_1 = 3U,	 // g for gradient
 			G_NORM_2 = 4U,
+			I_EUCLIDEAN = 5U,// i for interval
+			I_MANHATTAN = 6U,
+			I_COSINE = 7U,
+			I_CR_NORM_1 = 8U,
+			I_CR_NORM_2 = 9U,
 			END
 		};
 
@@ -109,6 +116,10 @@ namespace analyzer {
 		void compute_stat_kernel(TYPE_STAT_KERNEL seq_type, TYPE_CONTENT data_content);
 		void compute_stat_kernel_list(std::vector<TYPE_STAT_KERNEL> stat_list, TYPE_CONTENT data_content);
 		void compute_stat_kernel_all(TYPE_CONTENT data_content);
+
+		// stat kernel - for interval
+		void compute_stat_kernel(TYPE_STAT_KERNEL seq_type, TYPE_CONTENT data_content, Info& pre_info);
+		void compute_stat_kernel_all(TYPE_CONTENT data_content, Info& pre_info);
 
 		// data transfer
 

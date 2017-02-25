@@ -56,6 +56,14 @@ namespace db {
 		{ TYPE_STAT_KERNEL::G_NORM_2, "KernelGradNorm2" }
 	};
 
+	MAP_TYPE_STAT_KERNEL mapTypeIvKernel = {
+		{ TYPE_STAT_KERNEL::I_EUCLIDEAN, "KernelIvEuclidean" },
+		{ TYPE_STAT_KERNEL::I_MANHATTAN, "KernelIvManhattan" },
+		{ TYPE_STAT_KERNEL::I_COSINE, "KernelIvCosine" },
+		{ TYPE_STAT_KERNEL::I_CR_NORM_1, "KernelIvCRNorm1" },
+		{ TYPE_STAT_KERNEL::I_CR_NORM_2, "KernelIvCRNorm2" }
+	};
+
 	using TYPE_DISTANCE = analyzer::Infos::TYPE_DISTANCE;
 	MAP_TYPE_DIST mapTypeDist = {
 		{ TYPE_DISTANCE::CORRELATION, "DistCorrelation" },

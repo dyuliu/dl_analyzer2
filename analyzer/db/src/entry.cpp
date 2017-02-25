@@ -374,22 +374,29 @@ namespace db {
 		}
 	}
 
-	void DB::importStatKernel(analyzer::Infos::TYPE_STAT_KERNEL statName, analyzer::Infos::TYPE_CONTENT contentName, std::string colName) {
+	void DB::importStatKernel(analyzer::Infos::TYPE_STAT_KERNEL statName, analyzer::Infos::TYPE_CONTENT contentName, std::string type) {
 		MAP_TYPE_STAT_KERNEL::iterator iterStat;
-		iterStat = mapTypeStatKernel.find(statName);
-		if (iterStat == mapTypeStatKernel.end()) {
-			std::cout << "Wrong TYPE_STAT" << std::endl;
-			return;
+		if (type == "stat") {
+			iterStat = mapTypeStatKernel.find(statName);
+			if (iterStat == mapTypeStatKernel.end()) {
+				std::cout << "Wrong TYPE_STAT" << std::endl;
+				return;
+			}
+		} else if (type == "iv") {
+			iterStat = mapTypeIvKernel.find(statName);
+			if (iterStat == mapTypeIvKernel.end()) {
+				std::cout << "Wrong TYPE_STAT" << std::endl;
+				return;
+			}
 		}
+		
 		MAP_TYPE_CONTENT::iterator iterContent;
 		iterContent = mapTypeContent.find(contentName);
 		if (iterContent == mapTypeContent.end()) {
 			std::cout << "Wrong TYPE_CONTENT" << std::endl;
 			return;
 		}
-		if (colName == "") {
-			colName = iterStat->second;
-		}
+		std::string colName = iterStat->second;;
 		
 		std::string col = this->database + "." + this->dbName + "_" + colName;
 		// std::cout << "Importing data to \""<< col << "\"." << std::endl;
@@ -418,17 +425,20 @@ namespace db {
 	}
 
 	void DB::importAllStatsKernel() {
-		for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
-			this->importStatKernel(it->first, TYPE_CONTENT::WEIGHT);
+		//for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
+		//	this->importStatKernel(it->first, TYPE_CONTENT::WEIGHT, "stat");
+		//}
+		for (auto it = mapTypeIvKernel.begin(); it != mapTypeIvKernel.end(); ++it) {
+			this->importStatKernel(it->first, TYPE_CONTENT::WEIGHT, "iv");
 		}
 	}
 
 	void DB::importAll() {
 		this->importAllStats();
 		this->importAllSeqs();
-		// this->importAllDists();
-		// this->importImgInfo();
-		// this->importAllStatsKernel();
+		this->importImgInfo();
+		this->importAllStatsKernel();
+		//this->importAllDists();
 	}
 
 	void DB::importLayerAttrs(std::string colName) {
@@ -603,13 +613,21 @@ namespace db {
 		//	//this->connection.createIndex(col, fromjson("{wid:1, iter:1}"));
 		//}
 
-		//for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
-		//	col = this->database + "." + this->dbName + "_" + it->second;
-		//	std::cout << "Creating Index on " << col << std::endl;
-		//	this->connection.createIndex(col, fromjson("{iter:1}"));
-		//	this->connection.createIndex(col, fromjson("{lid:1}"));
-		//	// this->connection.createIndex(col, fromjson("{iter: 1, lid:1}"));
-		//}
+		for (auto it = mapTypeStatKernel.begin(); it != mapTypeStatKernel.end(); ++it) {
+			col = this->database + "." + this->dbName + "_" + it->second;
+			std::cout << "Creating Index on " << col << std::endl;
+			this->connection.createIndex(col, fromjson("{iter:1}"));
+			this->connection.createIndex(col, fromjson("{lid:1}"));
+			// this->connection.createIndex(col, fromjson("{iter: 1, lid:1}"));
+		}
+
+		for (auto it = mapTypeIvKernel.begin(); it != mapTypeIvKernel.end(); ++it) {
+			col = this->database + "." + this->dbName + "_" + it->second;
+			std::cout << "Creating Index on " << col << std::endl;
+			this->connection.createIndex(col, fromjson("{iter:1}"));
+			this->connection.createIndex(col, fromjson("{lid:1}"));
+			// this->connection.createIndex(col, fromjson("{iter: 1, lid:1}"));
+		}
 
 
 		//std::vector<std::string> names = { "WeightRaw", "GradRaw" };
@@ -695,6 +713,12 @@ namespace db {
 			this->connection.dropCollection(col);
 		}
 
+		for (auto it = mapTypeIvKernel.begin(); it != mapTypeIvKernel.end(); ++it) {
+			col = this->database + "." + this->dbName + "_" + it->second;
+			std::cout << "Deleting collection " << col << std::endl;
+			this->connection.dropCollection(col);
+		}
+
 
 		/*
 		for (auto it = mapTypeDist.begin(); it != mapTypeDist.end(); ++it) {
@@ -725,6 +749,17 @@ namespace db {
 		this->connection.dropCollection(col);
 		col = this->database + "." + this->dbName + "_" + "ImgTestInfo";
 		this->connection.dropCollection(col);
+	}
+
+	void DB::fetchTestIterSet(std::vector<int>& v) {
+		std::string col = this->database + "." + this->dbName + "_" + "ImgTestData";
+		cout << col << endl;
+		BSONObj b = this->connection.findOne(col, BSONObj());
+		vector<BSONElement> iters = b.getField("iter").Array();
+		v.reserve(iters.size());
+		for (int i = 0; i < iters.size(); i++) {
+			v.push_back(iters[i].Int());
+		}
 	}
 
 	void DB::processImgData() {

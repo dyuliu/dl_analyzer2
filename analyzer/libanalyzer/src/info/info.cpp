@@ -73,7 +73,12 @@ namespace analyzer {
 			{ TYPE_STAT_KERNEL::CR_NORM_2, "cr_norm2"},
 			{ TYPE_STAT_KERNEL::W_STD, "w_std" },
 			{ TYPE_STAT_KERNEL::G_NORM_1, "g_norm1" },
-			{ TYPE_STAT_KERNEL::G_NORM_2, "g_norm2" }
+			{ TYPE_STAT_KERNEL::G_NORM_2, "g_norm2" },
+			{ TYPE_STAT_KERNEL::I_EUCLIDEAN, "i_euclidean" },
+			{ TYPE_STAT_KERNEL::I_MANHATTAN, "i_manhattan" },
+			{ TYPE_STAT_KERNEL::I_COSINE, "i_cosine" },
+			{ TYPE_STAT_KERNEL::I_CR_NORM_1, "i_cr_norm1" },
+			{ TYPE_STAT_KERNEL::I_CR_NORM_2, "i_cr_norm2" }
 		};
 
 		map_layers = std::map<std::string, std::vector<int>> {
