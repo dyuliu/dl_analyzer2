@@ -94,6 +94,8 @@ namespace db {
 
 		void importAllStatsKernel();
 
+		void importAllStatsKernelIV();
+
 		/**
 		Import layer attrs
 		*/

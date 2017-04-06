@@ -3,15 +3,18 @@
 let mongodb = require('mongodb');
 let _ = require('lodash');
 let client = mongodb.MongoClient;
-let url = 'mongodb://msraiv:5000/final';
+let url = 'mongodb://msraiv:5000/final-n';
 let cols = [
+  'imagenet-16x-1',
+  'imagenet-4x-1',
+  'imagenet-2x-lr0.5'
   // 'imagenet-8x-1',
   // 'imagenet-2x-lr2',
   // 'imagenet-2x-1',
   // 'imagenet-1x-m0',
   // 'imagenet-1x-lr2',
   // 'imagenet-1x-lr0.5',
-  'imagenet-1x-1',
+  // 'imagenet-1x-1',
   // 'cifar-8x-1',
   // 'cifar-4x-1',
   // 'cifar-2x-lr2',
@@ -90,7 +93,8 @@ function getClassInfo(data) {
   _.each(data.images, (val, key) => {
     result.push({
       name: key,
-      size: _.size(val)
+      size: _.size(val),
+      file: _.keys(val)
     });
   })
   return result;

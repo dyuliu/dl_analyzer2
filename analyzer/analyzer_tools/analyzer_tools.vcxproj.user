@@ -4,8 +4,8 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-action=kernel_batch -src=records -database=final -dbname=imagenet-8x-1 -db</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>\\msraig-file01\cnnvis\Training_new\imagenet-resnet50-sgd-1P4G-8x</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArguments>-action=batch -src=records -batchsize=1 -database=test -dbname=cifar-1x-1 -db -all</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>\\msraig-file01\cnnvis2\train\cifar-resnet164-sgd-1P2G-1x-1</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

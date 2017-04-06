@@ -18,6 +18,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PlatformToolset>v120</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <PlatformToolset>v120</PlatformToolset>
@@ -27,7 +28,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)libanalyzer\include;$(SolutionDir)dependency\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)libanalyzer\include;$(SolutionDir)dependency\include;$(SolutionDir);$(VC_IncludePath);$(ProjectDir)include;$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib\$(Configuration);$(SolutionDir)\$(PlatformTarget)\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -58,7 +59,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\analyzer_tools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\analyzer_tools.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

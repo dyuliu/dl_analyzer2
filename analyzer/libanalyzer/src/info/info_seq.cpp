@@ -25,43 +25,43 @@ namespace analyzer {
 			r /= 10;
 		}
 
-		//for (int i = 0; i < info.layers_size(); i++) {
+		for (int i = 0; i < info.layers_size(); i++) {
 
-		//	if (info.layers(i).type() == "batch_norm") continue;
+			if (info.layers(i).type() == "batch_norm") continue;
 
-		//	if (data_content == TYPE_CONTENT::GRAD && !info.layers(i).grad_size()) return;
-		//	if (data_content == TYPE_CONTENT::WEIGHT && !info.layers(i).weight_size()) return;
-		//	std::vector<DType> ret_data;
+			if (data_content == TYPE_CONTENT::GRAD && !info.layers(i).grad_size()) return;
+			if (data_content == TYPE_CONTENT::WEIGHT && !info.layers(i).weight_size()) return;
+			std::vector<DType> ret_data;
 
-		//	const int idx = index(seq_type, data_content);
-		//	auto ptr = info.mutable_layers(i)->mutable_seq(idx);
+			const int idx = index(seq_type, data_content);
+			auto ptr = info.mutable_layers(i)->mutable_seq(idx);
 
-		//	if (ptr->data().size() != 0) continue;
+			if (ptr->data().size() != 0) continue;
 
-		//	if (seq_type == TYPE_SEQ::CHANGERATIO) {
-		//		ret_data.resize(NUM_CHANGERATIO_BINS);
-		//		// generate Bins here
-		//		if (data_content == TYPE_CONTENT::WEIGHT) {
-		//			ret_data = emath::changeratio(ArrayToVector(info.layers(i).weight()), 
-		//				ArrayToVector(info.layers(i).grad()), bins);
-		//		}
-		//	}
+			if (seq_type == TYPE_SEQ::CHANGERATIO) {
+				ret_data.resize(NUM_CHANGERATIO_BINS);
+				// generate Bins here
+				if (data_content == TYPE_CONTENT::WEIGHT) {
+					ret_data = emath::changeratio(ArrayToVector(info.layers(i).weight()), 
+						ArrayToVector(info.layers(i).grad()), bins);
+				}
+			}
 
-		//	/*
-		//	if (seq_type == TYPE_SEQ::HISTOGRAM) {
-		//		ret_data.resize(NUM_HISTOGRAM_BINS);
-		//		if (data_content == TYPE_CONTENT::GRAD)
-		//			ret_data = emath::histogram(ArrayToVector(info.layers(i).grad()), NUM_HISTOGRAM_BINS);
-		//		if (data_content == TYPE_CONTENT::WEIGHT)
-		//			ret_data = emath::histogram(ArrayToVector(info.layers(i).weight()), NUM_HISTOGRAM_BINS);
-		//	}
-		//	*/
+			/*
+			if (seq_type == TYPE_SEQ::HISTOGRAM) {
+				ret_data.resize(NUM_HISTOGRAM_BINS);
+				if (data_content == TYPE_CONTENT::GRAD)
+					ret_data = emath::histogram(ArrayToVector(info.layers(i).grad()), NUM_HISTOGRAM_BINS);
+				if (data_content == TYPE_CONTENT::WEIGHT)
+					ret_data = emath::histogram(ArrayToVector(info.layers(i).weight()), NUM_HISTOGRAM_BINS);
+			}
+			*/
 
-		//	// copy to data
-		//	for (auto const& val: ret_data) {
-		//		ptr->mutable_data()->Add(val);
-		//	}
-		//}
+			// copy to data
+			for (auto const& val: ret_data) {
+				ptr->mutable_data()->Add(val);
+			}
+		}
 
 		// compute high level layers
 		for (int i = 0; i < info.h_layers_size(); i++) {

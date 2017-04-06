@@ -97,26 +97,26 @@ namespace db {
 		{ "learning_rate", "RecLearningRate" }
 	};
 
-	MAP_LAYER mapLayer = {
-		{ "interstellar2a", { 6, 11, 16, 21 } },
-		{ "interstellar2b", { 26, 31, 36 } },
-		{ "interstellar2c", { 41, 46, 51 } },
-		{ "interstellar3a", { 56, 61, 66, 71 } },
-		{ "interstellar3b", { 76, 81, 86 } },
-		{ "interstellar3c", { 91, 96, 101 } },
-		{ "interstellar3d", { 106, 111, 116 } },
-		{ "interstellar4a", { 121, 126, 131, 136 } },
-		{ "interstellar4b", { 141, 146, 151 } },
-		{ "interstellar4c", { 156, 161, 166 } },
-		{ "interstellar4d", { 171, 176, 181 } },
-		{ "interstellar4e", { 186, 191, 196 } },
-		{ "interstellar4f", { 201, 206, 211 } },
-		{ "interstellar5a", { 216, 221, 226, 231 } },
-		{ "interstellar5b", { 236, 241, 246 } },
-		{ "interstellar5c", { 251, 256, 261 } },
-		{ "conv2", { 6, 11, 16, 21, 26, 31, 36, 41, 46, 51 } },
-		{ "conv3", { 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106, 111, 116 } },
-		{ "conv4", { 121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176, 181, 186, 191, 196, 201, 206, 211 } },
-		{ "conv5", { 216, 221, 226, 231, 236, 241, 246, 251, 256, 261 } }
-	};
+	//MAP_LAYER mapLayer = {
+	//	{ "interstellar2a", { 6, 11, 16, 21 } },
+	//	{ "interstellar2b", { 26, 31, 36 } },
+	//	{ "interstellar2c", { 41, 46, 51 } },
+	//	{ "interstellar3a", { 56, 61, 66, 71 } },
+	//	{ "interstellar3b", { 76, 81, 86 } },
+	//	{ "interstellar3c", { 91, 96, 101 } },
+	//	{ "interstellar3d", { 106, 111, 116 } },
+	//	{ "interstellar4a", { 121, 126, 131, 136 } },
+	//	{ "interstellar4b", { 141, 146, 151 } },
+	//	{ "interstellar4c", { 156, 161, 166 } },
+	//	{ "interstellar4d", { 171, 176, 181 } },
+	//	{ "interstellar4e", { 186, 191, 196 } },
+	//	{ "interstellar4f", { 201, 206, 211 } },
+	//	{ "interstellar5a", { 216, 221, 226, 231 } },
+	//	{ "interstellar5b", { 236, 241, 246 } },
+	//	{ "interstellar5c", { 251, 256, 261 } },
+	//	{ "conv2", { 6, 11, 16, 21, 26, 31, 36, 41, 46, 51 } },
+	//	{ "conv3", { 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106, 111, 116 } },
+	//	{ "conv4", { 121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176, 181, 186, 191, 196, 201, 206, 211 } },
+	//	{ "conv5", { 216, 221, 226, 231, 236, 241, 246, 251, 256, 261 } }
+	//};
 }
