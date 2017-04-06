@@ -30,12 +30,11 @@ DEFINE_string(database, "", "database name");
 #define CHECK_FLAGS_CONTENT {if (FLAGS_content!="grad"&&FLAGS_content!="weight") assert(!"content value is grad or weight");}
 #define CHECK_FLAGS_FRAMEWORK {if (!FLAGS_framework.size()) assert(!"Please enter caffepro, caffe, torch, cntk");}
 
-#include <iostream>
-#include <string>
+
 #include <config.h>
 
 #include <fstream>
-#include <proto/analyzer.pb.h>
+#include <proto/analyzer_proto.pb.h>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <info/info.h>
@@ -52,463 +51,87 @@ DEFINE_string(database, "", "database name");
 
 namespace analyzer_tools {
 
-	db::DB *dbInstance;
+	Analyzer::Analyzer(string db_name, string model_name, string host) {
+		dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "msraiv:5000");
 
-	/**********************************************************************
-	* COMMAND:
-	* 1. print all type value: (all stat of grad and weight)
-	* -action=analyzer -src=*.info -all
-	* 2. print one type value:  // see analyzer.h
-	* -action=analyzer -src=*.info -type=max
-	* 3. other set
-	* -content=weight/grad (grad)
-	***********************************************************************/
-	void analyzer_stat() {
-		CHECK_FLAGS_SRC;
+		firstParaInfo = true;
+		firstImgInfo = true;
 
-		Infos info(FLAGS_src);
+		recType = std::map < RECORD_TYPE, std::string > {
+			{ RECORD_TYPE::TRAIN_ERROR, "train_error" },
+			{ RECORD_TYPE::TRAIN_LOSS, "train_loss" },
+			{ RECORD_TYPE::TEST_ERROR, "test_error" },
+			{ RECORD_TYPE::TEST_LOSS, "test_loss" },
+			{ RECORD_TYPE::FORWARD_TIME, "forward_time" },
+			{ RECORD_TYPE::BACKWARD_TIME, "backward_time" },
+			{ RECORD_TYPE::UPDATE_TIME, "update_time" },
+			{ RECORD_TYPE::LEARNING_RATE, "learning_rate" }
+		};
 
-		if (FLAGS_all) {
-			info.compute_stat_all(Infos::TYPE_CONTENT::GRAD);
-			info.compute_stat_all(Infos::TYPE_CONTENT::WEIGHT);
-			info.print_stat_info(Infos::TYPE_CONTENT::GRAD);
-			info.print_stat_info(Infos::TYPE_CONTENT::WEIGHT);
-		}
-		else {
-			CHECK_FLAGS_TYPE;
-			CHECK_FLAGS_CONTENT;
-			auto type = info.to_type<Infos::TYPE_STAT>(FLAGS_type);
-			auto content = info.to_type<Infos::TYPE_CONTENT>(FLAGS_content);
-			info.compute_stat(type, content);
-			info.print_stat_info(content);
-		}
+		// init index
+		dbInstance->createIndexes();
 	}
 
-	void analyzer_seq() {
-
-		CHECK_FLAGS_SRC;
-
-		Infos info(FLAGS_src);
-
-		if (FLAGS_all) {
-			info.compute_seq_all(Infos::TYPE_CONTENT::GRAD);
-			info.compute_seq_all(Infos::TYPE_CONTENT::WEIGHT);
-			info.print_seq_info(Infos::TYPE_CONTENT::GRAD);
-			info.print_seq_info(Infos::TYPE_CONTENT::WEIGHT);
-		}
-		else {
-			CHECK_FLAGS_TYPE;
-			CHECK_FLAGS_CONTENT;
-			auto type = info.to_type<Infos::TYPE_SEQ>(FLAGS_type);
-			auto content = info.to_type<Infos::TYPE_CONTENT>(FLAGS_content);
-			info.compute_seq(type, content);
-			info.print_seq_info(content);
-		}
+	Analyzer::~Analyzer() {
+		delete dbInstance;
 	}
 
+	bool Analyzer::deal_rec_info(int iteration, RECORD_TYPE type, float value) {
+		// write to db
+		dbInstance->importRecorderInfo(iteration, recType[type].c_str(), value);
+		return true;
+	}
+	
 
-	/**********************************************************************
-	* COMMAND:
-	***********************************************************************/
-	void analyzer_layerinfo() {
-		CHECK_FLAGS_SRC;
+	bool Analyzer::deal_para_info(Info &para_info_) {
+		// write to db
+		std::shared_ptr<Infos> cur_info;
+		cur_info.reset(new Infos(para_info_));
+		cur_info->compute_stat_all(Infos::TYPE_CONTENT::GRAD);
+		cur_info->compute_seq_all(Infos::TYPE_CONTENT::GRAD);
+		cur_info->compute_stat_all(Infos::TYPE_CONTENT::WEIGHT);
+		cur_info->compute_seq_all(Infos::TYPE_CONTENT::WEIGHT);
+		cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT);
+		
+		dbInstance->bindInfo(&cur_info->get());
+		dbInstance->importAll();
 
-		if (FLAGS_db) {
-			Infos info(FLAGS_src);
-			dbInstance->bindInfo(&info.get());
+		if (firstParaInfo) {
+			firstParaInfo = false;
 			dbInstance->importLayerAttrs();
 		}
-	}
-
-	/**********************************************************************
-	* COMMAND:
-	* 1. print all type value:
-	* -action=recorder -src=*.log -all
-	* 2. print one type value:  // see recorder.h
-	* -action=recorder -src=*.log -type=test_error
-	* 3. set interval
-	* -interval=10
-	***********************************************************************/
-	void analyzer_recorder() {
-		CHECK_FLAGS_SRC;
-
-		if (FLAGS_all) {
-			Recorders recorder;
-			if (FLAGS_parse) {
-				CHECK_FLAGS_FRAMEWORK;
-				recorder.parse_from_log(FLAGS_src, FLAGS_framework);
-			}
-			else {
-				recorder.load_from_file(FLAGS_src);
-			}
-			// recorder.print_total_info();
-			if (FLAGS_db) {
-				dbInstance->bindRecorder(recorder.get());
-				dbInstance->importRecorderInfo();
-			}
-			else {
-				recorder.print_total_info();
-			}
-		}
 		else {
-			CHECK_FLAGS_TYPE;
-			CHECK_FLAGS_INTERVAL;
-			Recorders recorder(FLAGS_src);
-			auto val = recorder.get_specify_type(FLAGS_type);
-			for (auto &item : val) {
-				COUT_CHEK << "iter: " << std::get<0>(item) << ", type: " << std::get<1>(item) << ", val: " << std::get<2>(item) << std::endl;
-			}
-			// recorder.print_specify_type(FLAGS_type, FLAGS_interval);
-		}
-	}
-
-	static inline void analyzer_batch_db(std::vector<Infos> &batch_infos) {
-		int batch_size = batch_infos.size();
-		for (int x = 0; x < batch_size; x++) {
-			dbInstance->bindInfo(&batch_infos[x].get());
-			if (FLAGS_all) {
-				dbInstance->importAll();
-			}
-			else {
-				CHECK_FLAGS_HP;
-				CHECK_FLAGS_CONTENT;
-				CHECK_FLAGS_TYPE;
-
-				auto content = batch_infos[x].to_type<Infos::TYPE_CONTENT>(FLAGS_content);
-
-				if (FLAGS_hp == "stat") {
-					auto type = batch_infos[x].to_type<Infos::TYPE_STAT>(FLAGS_type);
-					dbInstance->importStat(type, content);
-				}
-				else if (FLAGS_hp == "dist") {
-					auto type = batch_infos[x].to_type<Infos::TYPE_DISTANCE>(FLAGS_type);
-					dbInstance->importDist(type, content);
-				}
-				else if (FLAGS_hp == "seq") {
-					auto type = batch_infos[x].to_type<Infos::TYPE_SEQ>(FLAGS_type);
-					dbInstance->importSeq(type, content);
-				}
-				else if (FLAGS_hp == "stat_kernel") {
-					auto type = batch_infos[x].to_type<Infos::TYPE_STAT_KERNEL>(FLAGS_type);
-					dbInstance->importStatKernel(type, content);
-				}
-			}
-		}
-
-		//COUT_CHEK << "work_id: " << (batch_infos[batch_size - 1].get().worker_id()) << std::endl;
-	}
-
-	static inline void analyzer_batch_distance(std::vector<Infos> &batch_infos) {
-		for (int idx = 1; idx < batch_infos.size(); idx++) {
-			//auto content = batch_infos[idx].to_type<Infos::TYPE_CONTENT>(FLAGS_content);
-			__FUNC_TIME_CALL(batch_infos[idx].compute_dist_all(Infos::TYPE_CONTENT::GRAD, batch_infos[0]), "Process file with distance " + batch_infos[idx].get().filename());
-			__FUNC_TIME_CALL(batch_infos[idx].compute_dist_all(Infos::TYPE_CONTENT::WEIGHT, batch_infos[0]), "Process file with distance " + batch_infos[idx].get().filename());
-		}
-	}
-
-	static inline void analyzer_batch_distance(std::vector<Infos> &batch_infos, Infos::TYPE_CONTENT type_content, Infos::TYPE_DISTANCE type_dist) {
-		for (int idx = 1; idx < batch_infos.size(); idx++) {
-			__FUNC_TIME_CALL(batch_infos[idx].compute_dist(type_dist, type_content, batch_infos[0]), "Process file with distance " + batch_infos[idx].get().filename());
-		}
-	}
-
-	static inline void analyzer_batch(std::vector<Infos> &batch_infos) {
-		int batch_size = batch_infos.size();
-		for (int idx = batch_size - 1; idx >= 0; idx--) {
-			auto &info = batch_infos[idx];
-			if (FLAGS_all) {
-				__FUNC_TIME_CALL(info.compute_stat_all(Infos::TYPE_CONTENT::GRAD), "Process file with grad " + info.get().filename());
-				__FUNC_TIME_CALL(info.compute_seq_all(Infos::TYPE_CONTENT::GRAD), "Process file with " + info.get().filename());
-
-				if (idx == 0) {
-					__FUNC_TIME_CALL(info.compute_stat_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
-					__FUNC_TIME_CALL(info.compute_seq_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
-					__FUNC_TIME_CALL(info.compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT), "Process file with weight " + info.get().filename());
-				}
-			}
-			else {
-				CHECK_FLAGS_HP;
-				CHECK_FLAGS_CONTENT;
-				CHECK_FLAGS_TYPE;
-
-				auto content = info.to_type<Infos::TYPE_CONTENT>(FLAGS_content);
-
-				if (FLAGS_hp == "stat") {
-					auto type = info.to_type<Infos::TYPE_STAT>(FLAGS_type);
-					__FUNC_TIME_CALL(info.compute_stat(type, content), "Process file with " + info.get().filename() + ", type: " + FLAGS_type + ", content: " + FLAGS_content);
-				}
-				else if (FLAGS_hp == "dist") {
-					auto type = info.to_type<Infos::TYPE_DISTANCE>(FLAGS_type);
-					if (batch_size > 1) {
-						analyzer_batch_distance(batch_infos, content, type);
-					}
-				}
-				else if (FLAGS_hp == "seq") {
-					auto type = info.to_type<Infos::TYPE_SEQ>(FLAGS_type);
-					__FUNC_TIME_CALL(info.compute_seq(type, content), "Process file with " + info.get().filename() + ", type: " + FLAGS_type + ", content: " + FLAGS_content);
-				}
-				else if (FLAGS_hp == "stat_kernel") {
-					auto type = info.to_type<Infos::TYPE_STAT_KERNEL>(FLAGS_type);
-					__FUNC_TIME_CALL(info.compute_stat_kernel(type, content), "Process file with " + info.get().filename() + ", type: " + FLAGS_type + ", content: " + FLAGS_content);
-				}
-			}
-		}
-	}
-
-	/**********************************************************************
-	* COMMAND:
-	***********************************************************************/
-	void analyzer_tools() {
-		CHECK_FLAGS_SRC;
-
-		if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
-			throw("Error: Missing folder path!");
-		auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
-
-		CHECK_FLAGS_BATCHSIZE;
-		int batch_size = FLAGS_batchsize;
-
-		for (int i = 0; i < files.size(); i += batch_size) {
-			std::vector<Infos> batch_infos;
-			COUT_CHEK << "Filename: " << files[i] << ", ratio:" << 100.0*(i + 1) / files.size() << std::endl;
-
-			if (i + batch_size > files.size()) continue;
-
-			for (int idx_batch = i; idx_batch < i + batch_size; idx_batch++)
-				batch_infos.push_back(Infos(files[idx_batch], batch_size));
-
-			analyzer_batch(batch_infos);
-
-			analyzer_batch_db(batch_infos);
-
-			batch_infos.clear();
-		}
-	}
-
-	void analyzer_cluster_batch() {
-		CHECK_FLAGS_SRC;
-		CHECK_FLAGS_TYPE;
-		CHECK_FLAGS_BATCHSIZE;
-		CHECK_FLAGS_INTERVAL;
-
-		if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
-			throw("Error: Missing folder path!");
-		auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
-
-		for (int i = 0; i < files.size(); i += FLAGS_interval*FLAGS_batchsize) {
-			Infos info(files[i]);
-			auto type = info.to_type<Infos::TYPE_CLUSTER>(FLAGS_type);
-			auto content = info.to_type<Infos::TYPE_CONTENT>(FLAGS_content);
-			info.compute_cluster(type, content, FLAGS_maxlayer);
-
-			if (FLAGS_db) {
-				dbInstance->bindInfo(&info.get());
-				dbInstance->importClusterInfo(type, content, FLAGS_maxlayer, "");
-			}
-			COUT_SUCC << "Success to process: " << files[i] << std::endl;
-		}
-	}
-
-
-	void analyzer_raw_batch() {
-		CHECK_FLAGS_SRC;
-		CHECK_FLAGS_BATCHSIZE;
-		CHECK_FLAGS_INTERVAL;
-
-		if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
-			throw("Error: Missing folder path!");
-		auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
-		std::cout << files.size() << std::endl;
-
-		int batch_size = FLAGS_batchsize;
-		for (int i = 0; i < files.size(); i += FLAGS_interval*FLAGS_batchsize) {
-			COUT_CHEK << "Raw - Filename: " << files[i] << ", ratio:" << 100 * (i + 1) / float(files.size()) << std::endl;
-
-			if (i + batch_size > files.size()) continue;
-
-			for (int idx_batch = i; idx_batch < i + batch_size; idx_batch++) {
-				Infos info = Infos(files[idx_batch]);
-				dbInstance->bindInfo(&info.get());
-				dbInstance->importRaw();
-			}
-		}
-	}
-
-	void analyzer_interval_batch() {
-		CHECK_FLAGS_SRC;
-		if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
-			throw("Error: Missing folder path!");
-		auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
-		std::cout << "total file number: " << files.size() << std::endl;
-
-		std::set<int> iterSet;
-		std::vector<int> iters;
-		dbInstance->fetchTestIterSet(iters);
-		for (auto &iter : iters) {
-			iterSet.insert(iter);
-		}
-		std::shared_ptr<Infos> pre_info(new Infos(files[0]));
-		std::shared_ptr<Infos> cur_info;
-		for (int i = 1; i < files.size(); i += 1) {
-			int num = std::stoi(files[i].substr(files[i].length() - 17, 8));
-			if (iterSet.find(num) == iterSet.end()) continue;
-			COUT_CHEK << "Kernel - Filename: " << files[i] << ", ratio:" << 100 * (i + 1) / float(files.size()) << std::endl;
-			cur_info.reset(new Infos(files[i]));
 			cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT, pre_info->get());
-
-			dbInstance->bindInfo(&cur_info->get());
-			dbInstance->importAllStatsKernel();
-
-			pre_info = cur_info;
-		}
-		// system("pause");
-	}
-
-	void analyzer_kernel_batch() {
-		CHECK_FLAGS_SRC;
-		if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
-			throw("Error: Missing folder path!");
-		auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
-		std::cout << "total file number: " << files.size() << std::endl;
-
-		std::set<int> iterSet;
-		std::vector<int> iters;
-		dbInstance->fetchTestIterSet(iters);
-		for (auto &iter : iters) {
-			iterSet.insert(iter);
-		}
-		std::shared_ptr<Infos> pre_info(new Infos(files[0]));
-		std::shared_ptr<Infos> cur_info;
-		for (int i = 1; i < files.size(); i += 1) {
-			int num = std::stoi(files[i].substr(files[i].length() - 17, 8));
-			if (iterSet.find(num) == iterSet.end()) continue;
-			COUT_CHEK << "Kernel - Filename: " << files[i] << ", ratio:" << 100 * (i + 1) / float(files.size()) << std::endl;
-			cur_info.reset(new Infos(files[i]));
-			cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT, pre_info->get());
-
-			dbInstance->bindInfo(&cur_info->get());
 			dbInstance->importAllStatsKernelIV();
-
-			pre_info = cur_info;
 		}
-		// system("pause");
+
+		pre_info = cur_info;
+		return true;
 	}
 
-	void analyzer_test_recorder() {
-		CHECK_FLAGS_SRC;
-		CHECK_FLAGS_IMGBATCH;
-
-		if (!analyzer::filesystem::exist(FLAGS_src.c_str()))
-			throw("Error: Missing folder path!");
-		auto files = analyzer::filesystem::get_files(FLAGS_src.c_str(), "*.info", false);
-
-		// previous label
-		std::map<std::string, int> map_label;
-		bool first = true;
-		for (int i = 0; i < files.size(); i++) {
-			COUT_CHEK << "Test img info: " << files[i] << ", ratio:" << 100 * (i + 1) / float(files.size()) << std::endl;
-			analyzer::Images img_info;
-
-			std::string filename = files[i];
-			std::ifstream fp(filename.c_str(), std::ios::binary);
-			google::protobuf::io::IstreamInputStream fstr(&fp);
-			google::protobuf::io::CodedInputStream code_input(&fstr);
-			code_input.SetTotalBytesLimit((int)MAX_PROTOFILE_SIZE, (int)MAX_PROTOFILE_SIZE);
-			img_info.ParseFromCodedStream(&code_input);
-			fp.close();
-
-
-			if (first) {
-				for (int j = 0; j < img_info.images_size(); j++) { map_label[img_info.images(j).file_name()] = -1; }
-				first = false;
-			}
-			if (FLAGS_db) {
-				dbInstance->bindImgInfo(&img_info);
-				dbInstance->importTestImgInfo(map_label, FLAGS_imgbatch);
-			}
-			else {
-				std::cout << "iteration: " << img_info.iteration() << ";  img_num: "
-					<< img_info.images_size() << std::endl;
-				for (int j = 0; j < img_info.images_size(); j++)
-					std::cout << img_info.images(j).file_name() << " " << img_info.images(j).class_name() << " " << img_info.images(j).label_id()
-					<< " " << img_info.images(j).answer() << std::endl;
-			}
+	bool Analyzer::deal_img_info(Images &img_info_, int batchsize) {
+		// write to db
+		Images img_info = img_info_;
+		if (firstImgInfo) {
+			for (int j = 0; j < img_info.images_size(); j++) { map_img_label[img_info.images(j).file_name()] = -1; }
+			firstImgInfo = false;
 		}
-	}
-
-
-	void test() {
-		CHECK_FLAGS_SRC;
-		Infos info(FLAGS_src);
-		info.compute_stat_all(Infos::TYPE_CONTENT::GRAD);
-		info.compute_stat_all(Infos::TYPE_CONTENT::WEIGHT);
-		info.compute_seq_all(Infos::TYPE_CONTENT::GRAD);
-		info.compute_seq_all(Infos::TYPE_CONTENT::WEIGHT);
-		system("pause");
-
-		dbInstance->bindInfo(&info.get());
-		dbInstance->importAllStats();
-		dbInstance->importAllSeqs();
-		system("pause");
-	}
-
-	int main(int argc, char *argv[]) {
-
-		gflags::ParseCommandLineFlags(&argc, &argv, true);
-
-		// actions in this part are for testing
-		//if (!FLAGS_db) {
-		//	if (FLAGS_action == "test")
-		//		test();
-		//	else if (FLAGS_action == "stat")
-		//		analyzer_stat();
-		//	else if (FLAGS_action == "seq")
-		//		analyzer_seq();
-		//	else if (FLAGS_action == "test_records")
-		//		analyzer_test_recorder();
-		//}
-
-
-
-		//dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "localhost:27017");
-		dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "msraiv:5000");
-		if (FLAGS_action == "test")
-			test();
-		else if (FLAGS_action == "recorder")
-			analyzer_recorder();
-		else if (FLAGS_action == "layerinfo")
-			analyzer_layerinfo();
-		else if (FLAGS_action == "batch")	// import stat & dist & seq && kernel
-			analyzer_tools();
-		else if (FLAGS_action == "raw_batch")
-			analyzer_raw_batch();
-		else if (FLAGS_action == "test_records") // test image info, such as label, prob vec
-			analyzer_test_recorder();
-		else if (FLAGS_action == "cluster_batch")
-			analyzer_cluster_batch();
-		else if (FLAGS_action == "kernel_batch")
-			analyzer_kernel_batch();
-		else if (FLAGS_action == "interval_batch")
-			analyzer_kernel_batch();
-		else if (FLAGS_action == "index")   // create index for each cols
-			dbInstance->createIndexes();
-		else if (FLAGS_action == "delete")  // delete specified cols
-			dbInstance->deleteDB();
-
-		if (FLAGS_action == "process") {
-			if (FLAGS_type == "ImgTestInfo") { dbInstance->processImgData(); }
-		}
-		
-		gflags::ShutDownCommandLineFlags();
-		return 0;
+		dbInstance->bindImgInfo(&img_info);
+		dbInstance->importTestImgInfo(map_img_label, batchsize);
+		return true;
 	}
 
 	void print() {
 		std::cout << "lib print test" << std::endl;
 	}
 
-}
+	bool save_image(char *data, int length, string cls_name, string img_name) {
+		string file = cls_name + "\\" + img_name;
+		std::ofstream out(file, std::ios::binary);
+		out.write((const char*)data, sizeof(unsigned char) * length);
+		out.close();
+		// free(data);
+	}
 
-//int main(int argc, char *argv[]) {
-//	
-//}
+
+}

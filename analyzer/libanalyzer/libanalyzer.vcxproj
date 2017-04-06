@@ -13,18 +13,16 @@
   <ItemGroup>
     <ClInclude Include="include\info\info.h" />
     <ClInclude Include="include\config.h" />
-    <ClInclude Include="include\proto\analyzer.pb.h" />
+    <ClInclude Include="include\proto\analyzer_proto.pb.h" />
     <ClInclude Include="include\recorder\recorder.h" />
     <ClInclude Include="include\utils\color_print.h" />
     <ClInclude Include="include\utils\filestream.h" />
     <ClInclude Include="include\utils\filesystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\proto\analyzer.pb.cc" />
+    <ClCompile Include="include\proto\analyzer_proto.pb.cc" />
     <ClCompile Include="src\info\info.cpp" />
-    <ClCompile Include="src\info\info_cluster.cpp" />
     <ClCompile Include="src\info\info_data.cpp" />
-    <ClCompile Include="src\info\info_distance.cpp" />
     <ClCompile Include="src\info\info_print.cpp" />
     <ClCompile Include="src\info\info_seq.cpp" />
     <ClCompile Include="src\info\info_stat.cpp" />

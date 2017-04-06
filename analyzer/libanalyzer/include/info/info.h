@@ -2,10 +2,12 @@
 #pragma once
 
 
-#include <proto/analyzer.pb.h>
 #include <config.h>
 #include <memory>
 #include <map>
+
+namespace analyzer_tools {
+
 
 namespace analyzer {
 
@@ -127,10 +129,6 @@ namespace analyzer {
 		std::vector<DType> get_content_data(TYPE_CONTENT content_type, std::string layer_name);
 		std::vector<DType> get_content_data(std::string content_type, std::string layer_name);
 
-		// cluster
-		void compute_cluster(TYPE_CLUSTER cluster_type, TYPE_CONTENT data_content, unsigned int maxlayer);
-		static void compute_cluster_kmeans(analyzer::Cluster *ptr, int channels, const float *data, int size, int length, int max_iter, int num_K = 5, int rand_seed = 0);
-
 	// Print
 	public:
 		void print_total_info();
@@ -149,6 +147,8 @@ namespace analyzer {
 		// constructor
 		Infos();
 		Infos(std::string filename);
+		Infos(Info &info_);
+
 		// for rank, it will be depleted in future
 		Infos(std::string path, int rank_size);
 
@@ -174,4 +174,6 @@ namespace analyzer {
 
 
 	};
+}
+
 }

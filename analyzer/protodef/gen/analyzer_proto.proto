@@ -1,5 +1,5 @@
 
-package analyzer;
+package analyzer_proto;
 
 message ClusterPoint {
   optional string name = 1;

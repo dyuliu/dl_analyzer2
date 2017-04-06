@@ -18,9 +18,6 @@
     <ClInclude Include="include\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\proto\analyzer.pb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\recorder\recorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -36,11 +33,11 @@
     <ClInclude Include="include\utils\filestream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\proto\analyzer_proto.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\proto\analyzer.pb.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\recorder\recorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -62,19 +59,16 @@
     <ClCompile Include="src\info\info_print.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\info\info_distance.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\info\info_seq.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\recorder\parse_caffepro.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\info\info_cluster.cpp">
+    <ClCompile Include="src\info\info_stat_kernel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\info\info_stat_kernel.cpp">
+    <ClCompile Include="include\proto\analyzer_proto.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
