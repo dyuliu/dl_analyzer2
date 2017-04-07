@@ -23,6 +23,7 @@
     <ClCompile Include="include\proto\analyzer_proto.pb.cc" />
     <ClCompile Include="src\info\info.cpp" />
     <ClCompile Include="src\info\info_data.cpp" />
+    <ClCompile Include="src\info\info_distance.cpp" />
     <ClCompile Include="src\info\info_print.cpp" />
     <ClCompile Include="src\info\info_seq.cpp" />
     <ClCompile Include="src\info\info_stat.cpp" />

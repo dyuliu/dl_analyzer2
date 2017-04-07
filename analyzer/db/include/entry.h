@@ -79,16 +79,6 @@ namespace analyzer_tools {
 			void importAllSeqs();
 
 			/**
-			Import a selected distance info into DB
-			*/
-			void importDist(analyzer::Infos::TYPE_DISTANCE distName, analyzer::Infos::TYPE_CONTENT contentName, std::string colName = "");
-
-			/**
-			Import all distance information to DB
-			*/
-			void importAllDists();
-
-			/**
 			Import all kernel ralted stats
 			*/
 			void importStatKernel(analyzer::Infos::TYPE_STAT_KERNEL statName, analyzer::Infos::TYPE_CONTENT contentName, std::string type = "stat");
@@ -142,7 +132,7 @@ namespace analyzer_tools {
 			void importClusterInfo(analyzer::Infos::TYPE_CLUSTER clusterName, analyzer::Infos::TYPE_CONTENT contentName, unsigned int maxlayer = 2, std::string colName = "ClusterInfo");
 
 			/**
-			Create Indexes for dist, stat, statseq, and recorder collections
+			Create Indexes for stat, statseq, and recorder collections
 			*/
 			void createIndexes();
 

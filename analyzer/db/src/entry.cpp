@@ -235,60 +235,11 @@ namespace analyzer_tools {
 			this->connection.insert(col, bObj2.obj());
 		}
 
-		void DB::importDist(TYPE_DISTANCE distName, TYPE_CONTENT contentName, std::string colName) {
-			MAP_TYPE_DIST::iterator iterDist;
-			iterDist = mapTypeDist.find(distName);
-			if (iterDist == mapTypeDist.end()) {
-				std::cout << "Wrong TYPE_DIST" << std::endl;
-				return;
-			}
-			MAP_TYPE_CONTENT::iterator iterContent;
-			iterContent = mapTypeContent.find(contentName);
-			if (iterContent == mapTypeContent.end()) {
-				std::cout << "Wrong TYPE_CONTENT" << std::endl;
-				return;
-			}
-			if (colName == "") {
-				colName = iterContent->second + iterDist->second;
-			}
-			//std::cout << "Importing data to \"" << colName << "\"." << std::endl;
-			std::string col = this->database + "." + this->dbName + "_" + colName;
-			Info *data = this->iData;
-			BSONObjBuilder bObj;
-			//BSONArrayBuilder floatArrValue, floatArrLayerId;
-
-			bObj.append("iter", data->iteration());
-			//.append("wid", data->worker_id());
-
-			BSONObjBuilder valueObj;
-			for (int i = 0; i < data->layers_size(); i++) {
-
-				if (data->layers(i).type() == "batch_norm") continue;
-				//floatArrValue.append(data->layers(i).stat(INDEX(statName, contentName)).value());
-				//floatArrLayerId.append(i);
-				valueObj.append(std::to_string(i), data->layers(i).distance(DIST_INDEX(distName, contentName)).value());
-			}
-			//bObj.append("value", floatArrValue.arr());
-			//bObj.append("l_ids", floatArrLayerId.arr());
-			bObj.append("value", valueObj.obj());
-			BSONObj o = bObj.obj();
-			this->connection.insert(col, o);
-		}
-
 		void DB::importAllStats() {
 			for (auto it = mapTypeStat.begin(); it != mapTypeStat.end(); ++it) {
 				this->importStat(it->first, TYPE_CONTENT::GRAD);
 				CHECK_HAVE_WEIGHT
 					this->importStat(it->first, TYPE_CONTENT::WEIGHT);
-			}
-		}
-
-		void DB::importAllDists() {
-			for (auto it = mapTypeDist.begin(); it != mapTypeDist.end(); ++it) {
-				if (this->iData->worker_id() != 0)
-					this->importDist(it->first, TYPE_CONTENT::GRAD);
-				// CHECK_HAVE_WEIGHT
-				// this->importDist(it->first, TYPE_CONTENT::WEIGHT);
 			}
 		}
 
@@ -505,86 +456,6 @@ namespace analyzer_tools {
 			std::cout << data->tuple_size() << "tuples have been inserted successfully" << std::endl;
 		}
 
-		void DB::importClusterInfo(TYPE_CLUSTER clusterName, TYPE_CONTENT contentName, unsigned int maxlayer, std::string colName) {
-
-			MAP_TYPE_CLUSTER::iterator iterCluster;
-			iterCluster = mapTypeCluster.find(clusterName);
-			if (iterCluster == mapTypeCluster.end()) {
-				std::cout << "Wrong TYPE_Cluster" << std::endl;
-				return;
-			}
-			MAP_TYPE_CONTENT::iterator iterContent;
-			iterContent = mapTypeContent.find(contentName);
-			if (iterContent == mapTypeContent.end()) {
-				std::cout << "Wrong TYPE_CONTENT" << std::endl;
-				return;
-			}
-			if (colName == "") {
-				colName = iterContent->second + iterCluster->second;
-			}
-			//std::cout << "Importing data to \"" << colName << "\"." << std::endl;
-			std::string col = this->database + "." + this->dbName + "_" + colName;
-			Info *data = this->iData;
-
-			int count = 0;
-			for (int i = 0; i < data->layers_size(); i++) {
-				if (data->layers(i).type() == "batch_norm")
-				{
-					continue;
-				}
-				else
-				{
-					count++;
-				}
-
-				if (count > maxlayer) return;
-
-				auto ptr = data->layers(i).cluster(CLUSTER_INDEX(TYPE_CLUSTER::KMEANS, TYPE_CONTENT::WEIGHT));
-
-				BSONObjBuilder centersObj;
-				for (int ic = 0; ic < ptr.centre_size(); ic++) {
-					BSONObjBuilder centerObj;
-					centerObj.append("group_id", ptr.centre(ic).group_id());
-					centerObj.append("averageDistance", ptr.centre(ic).value());
-					BSONArrayBuilder floatArrValue;
-					for (auto v : ptr.centre(ic).data()) {
-						floatArrValue.append(v);
-					}
-					centerObj.append("coord", floatArrValue.arr());
-					centersObj.append(std::to_string(ptr.centre(ic).index()), centerObj.obj());
-				}
-				BSONObj centers = centersObj.obj();
-
-				BSONObjBuilder *pointsObjs = new BSONObjBuilder[data->layers(i).channels()];
-				for (int ip = 0; ip < ptr.points_size(); ip++) {
-					BSONObjBuilder pointObj;
-					pointObj.append("group_id", ptr.points(ip).group_id());
-					pointObj.append("distance", ptr.points(ip).value());
-					BSONArrayBuilder floatArrValue;
-					for (auto v : ptr.points(ip).data()) {
-						floatArrValue.append(v);
-					}
-					pointObj.append("coord", floatArrValue.arr());
-					pointsObjs[ptr.points(ip).channel_id()].append(std::to_string(ptr.points(ip).index()), pointObj.obj());
-				}
-
-				BulkOperationBuilder bulk = this->connection.initializeUnorderedBulkOp(col);
-				for (int fc = 0; fc < data->layers(i).channels(); fc++) {
-					BSONObjBuilder bObj;
-					bObj
-						.append("iter", data->iteration())
-						//.append("wid", data->worker_id())
-						.append("lid", i)
-						.append("cid", fc)
-						.append("clusterNumbers", ptr.num())
-						.append("centers", centers)
-						.append("points", pointsObjs[fc].obj());
-					bulk.insert(bObj.obj());
-				}
-				mongo::WriteResult rs;
-				bulk.execute(0, &rs);
-			}
-		}
 
 		void DB::createIndexes() {
 
@@ -692,31 +563,6 @@ namespace analyzer_tools {
 				std::cout << "Deleting collection " << col << std::endl;
 				this->connection.dropCollection(col);
 			}
-
-
-			for (auto it = mapTypeDist.begin(); it != mapTypeDist.end(); ++it) {
-				col = this->database + "." + this->dbName + "_Grad" + it->second;
-				std::cout << "Deleting collection " << col << std::endl;
-				this->connection.dropCollection(col);
-
-				col = this->database + "." + this->dbName + "_Weight" + it->second;
-				std::cout << "Deleting collection " << col << std::endl;
-				this->connection.dropCollection(col);
-			}
-
-			for (auto it = mapTypeCluster.begin(); it != mapTypeCluster.end(); ++it) {
-				col = this->database + "." + this->dbName + "_Weight" + it->second;
-				std::cout << "Deleting collection " << col << std::endl;
-				this->connection.dropCollection(col);
-			}
-
-			std::vector<std::string> names = { "WeightRaw", "GradRaw" };
-			for (auto it : names) {
-				col = this->database + "." + this->dbName + "_" + it;
-				std::cout << "Deleting collection " << col << std::endl;
-				this->connection.dropCollection(col);
-			}
-
 
 			col = this->database + "." + this->dbName + "_" + "ImgTrainInfo";
 			this->connection.dropCollection(col);

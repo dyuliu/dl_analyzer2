@@ -71,5 +71,8 @@
     <ClCompile Include="include\proto\analyzer_proto.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\info\info_distance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

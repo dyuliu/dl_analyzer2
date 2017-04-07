@@ -1,36 +1,6 @@
 #include <google/gflags/gflags.h>
 #include <assert.h>
 
-DEFINE_string(action, "recorder", "recorder, stat, distance, batch");
-DEFINE_string(src, "running_info_0.log", "the specify file/folder path");
-
-DEFINE_string(type, "", "specify output type");
-DEFINE_string(hp, "", "stat, dist, seq");
-DEFINE_string(content, "weight", "grad or weight");
-DEFINE_string(framework, "caffepro", "caffepro, caffe, torch, cntk");
-
-DEFINE_uint64(batchsize, 1, "batch size of records");
-DEFINE_uint64(imgbatch, 1000, "batch size of test images");
-DEFINE_uint64(interval, 1, "specify output interval");
-DEFINE_uint64(maxlayer, 2, "specify max layers to calculate");
-
-DEFINE_bool(all, false, "if output all type info");
-DEFINE_bool(db, false, "if upload to db");
-DEFINE_bool(parse, false, "parse log file to recorders");
-
-DEFINE_string(dbname, "", "sub-database name");
-DEFINE_string(database, "", "database name");
-
-#define CHECK_FLAGS_SRC {if (!FLAGS_src.size()) assert(!"Missing src path!");}
-#define CHECK_FLAGS_IMGBATCH {if (!FLAGS_imgbatch) assert(!"Error input of test image batchsize!");}
-#define CHECK_FLAGS_TYPE {if (!FLAGS_type.size()) assert(!"Missing specify output type!");}
-#define CHECK_FLAGS_HP {if (!FLAGS_hp.size()) assert(!"Missing specify hyperparameter type!");}
-#define CHECK_FLAGS_BATCHSIZE {if (!FLAGS_batchsize) assert(!"Error input of batchsize!");}
-#define CHECK_FLAGS_INTERVAL {if (FLAGS_interval<=0) assert(!"The interval should be larger than 0!");}
-#define CHECK_FLAGS_CONTENT {if (FLAGS_content!="grad"&&FLAGS_content!="weight") assert(!"content value is grad or weight");}
-#define CHECK_FLAGS_FRAMEWORK {if (!FLAGS_framework.size()) assert(!"Please enter caffepro, caffe, torch, cntk");}
-
-
 #include <config.h>
 
 #include <fstream>
@@ -52,10 +22,10 @@ DEFINE_string(database, "", "database name");
 namespace analyzer_tools {
 
 	Analyzer::Analyzer(string db_name, string model_name, string host) {
-		dbInstance = new db::DB(FLAGS_database, FLAGS_dbname, "msraiv:5000");
+		db_instance = new db::DB(db_name, model_name, host);
 
-		firstParaInfo = true;
-		firstImgInfo = true;
+		first_parainfo = true;
+		first_imginfo = true;
 
 		recType = std::map < RECORD_TYPE, std::string > {
 			{ RECORD_TYPE::TRAIN_ERROR, "train_error" },
@@ -69,16 +39,16 @@ namespace analyzer_tools {
 		};
 
 		// init index
-		dbInstance->createIndexes();
+		db_instance->createIndexes();
 	}
 
 	Analyzer::~Analyzer() {
-		delete dbInstance;
+		delete db_instance;
 	}
 
 	bool Analyzer::deal_rec_info(int iteration, RECORD_TYPE type, float value) {
 		// write to db
-		dbInstance->importRecorderInfo(iteration, recType[type].c_str(), value);
+		db_instance->importRecorderInfo(iteration, recType[type].c_str(), value);
 		return true;
 	}
 	
@@ -93,16 +63,16 @@ namespace analyzer_tools {
 		cur_info->compute_seq_all(Infos::TYPE_CONTENT::WEIGHT);
 		cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT);
 		
-		dbInstance->bindInfo(&cur_info->get());
-		dbInstance->importAll();
+		db_instance->bindInfo(&cur_info->get());
+		db_instance->importAll();
 
-		if (firstParaInfo) {
-			firstParaInfo = false;
-			dbInstance->importLayerAttrs();
+		if (first_parainfo) {
+			first_parainfo = false;
+			db_instance->importLayerAttrs();
 		}
 		else {
 			cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT, pre_info->get());
-			dbInstance->importAllStatsKernelIV();
+			db_instance->importAllStatsKernelIV();
 		}
 
 		pre_info = cur_info;
@@ -112,12 +82,12 @@ namespace analyzer_tools {
 	bool Analyzer::deal_img_info(Images &img_info_, int batchsize) {
 		// write to db
 		Images img_info = img_info_;
-		if (firstImgInfo) {
+		if (first_imginfo) {
 			for (int j = 0; j < img_info.images_size(); j++) { map_img_label[img_info.images(j).file_name()] = -1; }
-			firstImgInfo = false;
+			first_imginfo = false;
 		}
-		dbInstance->bindImgInfo(&img_info);
-		dbInstance->importTestImgInfo(map_img_label, batchsize);
+		db_instance->bindImgInfo(&img_info);
+		db_instance->importTestImgInfo(map_img_label, batchsize);
 		return true;
 	}
 
@@ -131,6 +101,7 @@ namespace analyzer_tools {
 		out.write((const char*)data, sizeof(unsigned char) * length);
 		out.close();
 		// free(data);
+		return true;
 	}
 
 
