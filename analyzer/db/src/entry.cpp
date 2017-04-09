@@ -297,6 +297,7 @@ namespace analyzer_tools {
 				// BSONArrayBuilder prob;
 
 				for (int j = i; j < i + batchsize; j++) {
+					if (j >= data->images_size()) { break; }
 					int correct_label = data->images(j).label_id();
 					int cur_label = data->images(j).answer();
 					int pre_label = map_label[data->images(j).file_name()];

@@ -1,91 +1,56 @@
+package analyzer_proto;                     // namespace
 
-package analyzer_proto;
-
-message ClusterPoint {
-  optional string name = 1;
-  optional string type = 2;
-  optional int32 index = 3;
-  optional int32 group_id = 4;
-  optional int32 channel_id = 7;
-  // one-dim value
-  optional float value = 5;
-  // multi-dim value
-  repeated float data = 6;
+// following defines the test img info
+message Image {                             // one image info
+  optional string class_name = 1;           // which class
+  optional string file_name = 2;            // image file name on disk
+  optional int32 label_id = 3;              // image true label
+  optional int32 answer = 4;                // image classfication result at current iteration
+  repeated float prob = 5 [packed=true];    // class score (probability) vector
 }
 
-message Cluster {
-  optional string type = 1;
-  // weight or grad
-  optional string content = 2;
-  // number of group
-  optional float num = 3;
-  repeated ClusterPoint points = 4;
-  repeated ClusterPoint centre = 5;
-}
-
-message HyperParameter {
-  optional string type = 1;
-  optional string content = 2;
-  optional float value = 3;
-  repeated float data = 4;
-}
-
-message Layer {
-  optional int32 count = 1;
-  // layer type
-  optional string type = 2;
-  optional int32 num = 3;
-  optional int32 channels = 4;
-  optional int32 height = 5;
-  optional int32 width = 6;
-  optional string name = 7;
-  repeated float weight = 8;
-  repeated float grad = 9;
-  repeated HyperParameter stat = 10;
-  repeated HyperParameter distance = 11;
-  repeated HyperParameter seq = 12;
-  repeated HyperParameter stat_kernel = 13;
-  repeated Cluster cluster = 14;
-}
-
-message HLayer {
-	optional string name = 1;
-	repeated HyperParameter stat = 10;
-	repeated HyperParameter seq = 12;
-}
-
-message Image {
-  optional string class_name = 1;
-  optional string file_name = 2;
-  optional int32 label_id = 3;
-  optional int32 answer = 4;
-  repeated float prob = 5 [packed=true];
-}
-
-message Images {
-  optional int32 iteration = 1;
+message Images {                            // an array of images info
+  optional int32 iteration = 1;             // dumped iteration
   repeated Image images = 2;
 }
 
+// following defines the parameter info
+message HyperParameter {
+  optional string type = 1;                      // stat type, e.g., mean, sum
+  optional string content = 2;                   // weight or gradient
+  optional float value = 3;                      // single value
+  repeated float data = 4;                       // array - for sequence stat
+}
+
+message Layer {
+  optional int32 count = 1;                       // type of layer, e.g., batch_norm, conv
+  optional string type = 2;                       // type of layer, e.g., batch_norm, conv
+  optional int32 num = 3;                         // number of filters
+  optional int32 channels = 4;                    // number of filters of previous layer
+  optional int32 height = 5;                      // filter height
+  optional int32 width = 6;                       // filter width
+  optional string name = 7;                       // layer name
+  repeated float weight = 8;                      // weigth vector
+  repeated float grad = 9;                        // grad vector
+  repeated HyperParameter stat = 10;              // computed different types of stat (i.e., single value)
+  repeated HyperParameter seq = 11;               // computed different types of sequence stat (i.e., array)
+  repeated HyperParameter stat_kernel = 12;       // computed different types of filter-level stat
+}
+
+message HLayer {
+	optional string name = 1;                       // high level layer name
+	repeated HyperParameter stat = 2;               // computed different types of stat (i.e., single value)
+	repeated HyperParameter seq = 3;                // computed different types of sequence stat (i.e., array)
+}
+
+// following defines a synthesized .info
 message Info {
-  optional string filename = 1;
-  optional int32 iteration = 2;
-  optional int32 worker_id = 3;
-  optional int32 sim_id = 4;
-  optional Images images = 5;
-  repeated Layer layers = 6;
-  repeated HLayer h_layers = 7;
+  optional string filename = 1;     // file name used to store on disk; iteration_rank.info, e.g., 00026600_000
+  optional int32 iteration = 2;     // dumped iteration
+  optional int32 worker_id = 3;     // ssgd - node id
+  optional Images images = 4;       // training image infro
+  repeated Layer layers = 5;        // elementary CONV layer
+  repeated HLayer h_layers = 6;     // computed high level CONV layer
 }
 
-message RecordTuple {
-  optional int32 iteration = 1;
-  optional float value = 2;
-  optional string type = 3;
-  // maybe used in multi-value
-  repeated float data = 4;
-}
 
-message Recorder {
-  optional string name = 1;
-  repeated RecordTuple tuple = 2;
-}

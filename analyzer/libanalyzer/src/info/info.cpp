@@ -90,67 +90,67 @@ namespace analyzer_tools {
 			};
 
 			// for imagenet
-			map_layers = std::map < std::string, std::vector<int> > {
-				{ "interstellar2a", { 6, 11, 16, 21 } },
-				{ "interstellar2b", { 26, 31, 36 } },
-				{ "interstellar2c", { 41, 46, 51 } },
-				{ "interstellar3a", { 56, 61, 66, 71 } },
-				{ "interstellar3b", { 76, 81, 86 } },
-				{ "interstellar3c", { 91, 96, 101 } },
-				{ "interstellar3d", { 106, 111, 116 } },
-				{ "interstellar4a", { 121, 126, 131, 136 } },
-				{ "interstellar4b", { 141, 146, 151 } },
-				{ "interstellar4c", { 156, 161, 166 } },
-				{ "interstellar4d", { 171, 176, 181 } },
-				{ "interstellar4e", { 186, 191, 196 } },
-				{ "interstellar4f", { 201, 206, 211 } },
-				{ "interstellar5a", { 216, 221, 226, 231 } },
-				{ "interstellar5b", { 236, 241, 246 } },
-				{ "interstellar5c", { 251, 256, 261 } },
-				{ "conv2", { 6, 11, 16, 21, 26, 31, 36, 41, 46, 51 } },
-				{ "conv3", { 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106, 111, 116 } },
-				{ "conv4", { 121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176, 181, 186, 191, 196, 201, 206, 211 } },
-				{ "conv5", { 216, 221, 226, 231, 236, 241, 246, 251, 256, 261 } }
-			};
+			//map_layers = std::map < std::string, std::vector<int> > {
+			//	{ "interstellar2a", { 6, 11, 16, 21 } },
+			//	{ "interstellar2b", { 26, 31, 36 } },
+			//	{ "interstellar2c", { 41, 46, 51 } },
+			//	{ "interstellar3a", { 56, 61, 66, 71 } },
+			//	{ "interstellar3b", { 76, 81, 86 } },
+			//	{ "interstellar3c", { 91, 96, 101 } },
+			//	{ "interstellar3d", { 106, 111, 116 } },
+			//	{ "interstellar4a", { 121, 126, 131, 136 } },
+			//	{ "interstellar4b", { 141, 146, 151 } },
+			//	{ "interstellar4c", { 156, 161, 166 } },
+			//	{ "interstellar4d", { 171, 176, 181 } },
+			//	{ "interstellar4e", { 186, 191, 196 } },
+			//	{ "interstellar4f", { 201, 206, 211 } },
+			//	{ "interstellar5a", { 216, 221, 226, 231 } },
+			//	{ "interstellar5b", { 236, 241, 246 } },
+			//	{ "interstellar5c", { 251, 256, 261 } },
+			//	{ "conv2", { 6, 11, 16, 21, 26, 31, 36, 41, 46, 51 } },
+			//	{ "conv3", { 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106, 111, 116 } },
+			//	{ "conv4", { 121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176, 181, 186, 191, 196, 201, 206, 211 } },
+			//	{ "conv5", { 216, 221, 226, 231, 236, 241, 246, 251, 256, 261 } }
+			//};
 
 
 			// for cifar
-			//map_layers = std::map<std::string, std::vector<int>> {
-			//	{ "interstellar2a", { 5, 10, 15, 20 } },
-			//	{ "interstellar3a", { 280, 285, 290, 295 } },
-			//	{ "interstellar4a", { 555, 560, 565, 570 } }
-			//};
-			//for (int i = 2; i <= 4; i++) {
-			//	int idx;
-			//	std::vector<int> convVec;
+			map_layers = std::map<std::string, std::vector<int>> {
+				{ "interstellar2a", { 5, 10, 15, 20 } },
+				{ "interstellar3a", { 280, 285, 290, 295 } },
+				{ "interstellar4a", { 555, 560, 565, 570 } }
+			};
+			for (int i = 2; i <= 4; i++) {
+				int idx;
+				std::vector<int> convVec;
 
-			//	if (i == 2) {
-			//		idx = 25;
-			//		auto vec2 = map_layers.find("interstellar2a")->second;
-			//		convVec.insert(convVec.end(), vec2.begin(), vec2.end());
-			//	}
-			//	if (i == 3) {
-			//		idx = 300;
-			//		auto vec2 = map_layers.find("interstellar3a")->second;
-			//		convVec.insert(convVec.end(), vec2.begin(), vec2.end());
-			//	}
-			//	if (i == 4) {
-			//		idx = 575;
-			//		auto vec2 = map_layers.find("interstellar4a")->second;
-			//		convVec.insert(convVec.end(), vec2.begin(), vec2.end());
-			//	}
-			//	for (int j = 1; j <= 17; j++) {
-			//		std::string name = "interstellar" + std::to_string(i) + "b" + std::to_string(j);
-			//		int a = idx, b = idx + 5, c = idx + 10;
-			//		idx = c + 5;
-			//		map_layers.insert(std::map<std::string, std::vector<int>>::value_type(name, {a, b, c}));
-			//		convVec.push_back(a);
-			//		convVec.push_back(b);
-			//		convVec.push_back(c);
-			//	}
-			//	std::string convName = "conv" + std::to_string(i);
-			//	map_layers.insert(std::map<std::string, std::vector<int>>::value_type(convName, convVec));
-			//}
+				if (i == 2) {
+					idx = 25;
+					auto vec2 = map_layers.find("interstellar2a")->second;
+					convVec.insert(convVec.end(), vec2.begin(), vec2.end());
+				}
+				if (i == 3) {
+					idx = 300;
+					auto vec2 = map_layers.find("interstellar3a")->second;
+					convVec.insert(convVec.end(), vec2.begin(), vec2.end());
+				}
+				if (i == 4) {
+					idx = 575;
+					auto vec2 = map_layers.find("interstellar4a")->second;
+					convVec.insert(convVec.end(), vec2.begin(), vec2.end());
+				}
+				for (int j = 1; j <= 17; j++) {
+					std::string name = "interstellar" + std::to_string(i) + "b" + std::to_string(j);
+					int a = idx, b = idx + 5, c = idx + 10;
+					idx = c + 5;
+					map_layers.insert(std::map<std::string, std::vector<int>>::value_type(name, {a, b, c}));
+					convVec.push_back(a);
+					convVec.push_back(b);
+					convVec.push_back(c);
+				}
+				std::string convName = "conv" + std::to_string(i);
+				map_layers.insert(std::map<std::string, std::vector<int>>::value_type(convName, convVec));
+			}
 		}
 
 		void Infos::init_stat() {

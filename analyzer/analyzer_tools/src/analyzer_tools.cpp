@@ -48,6 +48,8 @@ namespace analyzer_tools {
 
 	bool Analyzer::deal_rec_info(int iteration, RECORD_TYPE type, float value) {
 		// write to db
+		std::cout << "deal_rec_info" << std::endl;
+		
 		db_instance->importRecorderInfo(iteration, recType[type].c_str(), value);
 		return true;
 	}
@@ -55,22 +57,32 @@ namespace analyzer_tools {
 
 	bool Analyzer::deal_para_info(Info &para_info_) {
 		// write to db
+		std::cout << "deal_para_info" << std::endl;
+
 		std::shared_ptr<Infos> cur_info;
 		cur_info.reset(new Infos(para_info_));
+		std::cout << "deal_para_stat_grad" << std::endl;
 		cur_info->compute_stat_all(Infos::TYPE_CONTENT::GRAD);
+		std::cout << "deal_para_seq_grad" << std::endl;
 		cur_info->compute_seq_all(Infos::TYPE_CONTENT::GRAD);
+		std::cout << "deal_para_stat_weight" << std::endl;
 		cur_info->compute_stat_all(Infos::TYPE_CONTENT::WEIGHT);
+		std::cout << "deal_para_seq_weight" << std::endl;
 		cur_info->compute_seq_all(Infos::TYPE_CONTENT::WEIGHT);
+		std::cout << "deal_para_kernel" << std::endl;
 		cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT);
 		
+		std::cout << "deal_para_import_db" << std::endl;
 		db_instance->bindInfo(&cur_info->get());
 		db_instance->importAll();
 
 		if (first_parainfo) {
 			first_parainfo = false;
+			std::cout << "deal_para_layer_info" << std::endl;
 			db_instance->importLayerAttrs();
 		}
 		else {
+			std::cout << "deal_para_kernel_iv" << std::endl;
 			cur_info->compute_stat_kernel_all(Infos::TYPE_CONTENT::WEIGHT, pre_info->get());
 			db_instance->importAllStatsKernelIV();
 		}
@@ -79,9 +91,10 @@ namespace analyzer_tools {
 		return true;
 	}
 
-	bool Analyzer::deal_img_info(Images &img_info_, int batchsize) {
+	bool Analyzer::deal_img_info(Images &img_info, int batchsize) {
 		// write to db
-		Images img_info = img_info_;
+		std::cout << "deal_img_info " << img_info.images_size() << std::endl;
+
 		if (first_imginfo) {
 			for (int j = 0; j < img_info.images_size(); j++) { map_img_label[img_info.images(j).file_name()] = -1; }
 			first_imginfo = false;
