@@ -1,25 +1,15 @@
-#include <google/gflags/gflags.h>
 #include <assert.h>
-
-#include <config.h>
 
 #include <proto/analyzer_proto.pb.h>
 
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <info/info.h>
 #include <db/include/entry.h>
-
-#include <omp.h>
-
-#include <emath\include\config.h>
-#include <emath\include\distance.h>
-
 #include "analyzer_tools.h"
 #include <json11.hpp>
-
 #include <sstream>
 #include <fstream>
 #include <exception>
+
 using namespace json11;
 
 namespace analyzer_tools {

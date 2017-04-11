@@ -10,12 +10,6 @@
 #define MAP_TYPE_STAT_KERNEL std::map<analyzer::Infos::TYPE_STAT_KERNEL, std::string>
 #define STAT_KERNEL_INDEX(x, y) (int)y * (int)analyzer::Infos::TYPE_STAT_KERNEL::END + (int)x
 
-#define MAP_TYPE_DIST std::map<analyzer::Infos::TYPE_DISTANCE, std::string>
-#define DIST_INDEX(x, y) (int)y * (int)analyzer::Infos::TYPE_DISTANCE::END + (int)x
-
-#define MAP_TYPE_CLUSTER std::map<analyzer::Infos::TYPE_CLUSTER, std::string>
-#define CLUSTER_INDEX(x, y) (int)y * (int)analyzer::Infos::TYPE_CLUSTER::END + (int)x
-
 #define MAP_TYPE_CONTENT std::map<analyzer::Infos::TYPE_CONTENT, std::string>
 
 #define MAP_LAYER std::map<std::string, std::vector<int>>
