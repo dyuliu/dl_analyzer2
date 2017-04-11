@@ -6,7 +6,6 @@
 
 // internel
 #include <proto/analyzer_proto.pb.h>
-using analyzer_proto::Recorder;
 using analyzer_proto::Info;
 
 

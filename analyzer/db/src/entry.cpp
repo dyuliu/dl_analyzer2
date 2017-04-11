@@ -4,14 +4,7 @@
 
 #define CHECK_HAVE_WEIGHT {if (this->iData->worker_id() != 0) continue;}
 
-using mongo::BSONArrayBuilder;
-using mongo::BSONArray;
-using mongo::BSONElement;
-using mongo::BSONObj;
-using mongo::BSONObjBuilder;
-using mongo::BulkOperationBuilder;
-using mongo::DBClientCursor;
-using mongo::fromjson;
+
 
 namespace analyzer_tools {
 
@@ -41,10 +34,6 @@ namespace analyzer_tools {
 		void DB::bindImgInfo(Images *data) {
 			this->imgData = data;
 		};
-
-		void DB::bindRecorder(Recorder *data) {
-			this->rData = data;
-		}
 
 		void DB::importGradient(std::string colName) {
 			// std::cout << "Importing gradient data to collection \"" << colName << "\"." << std::endl;
@@ -279,8 +268,144 @@ namespace analyzer_tools {
 			this->connection.insert(col, o);
 		}
 
+		void DB::importTestImgStat(bool first, std::string colName) {
+			// to do
+		};
+
+
+		void DB::importTestImgData(bool first, std::string colName) {
+			std::string col = this->database + "." + this->dbName + "_" + colName;
+			Images *data = this->imgData;
+			if (first) {
+
+				//COUT_G("initializing") << std::endl;
+				for (int i = 0; i < data->images_size(); i++) {
+					auto file = data->images(i).file_name();
+					auto cls = data->images(i).class_name();
+					auto label = data->images(i).label_id();
+					vector<int> iter;
+					vector<int> answer;
+					vector<int> correct;
+
+					struct Img tmp = {
+						file,
+						cls,
+						label,
+						iter,
+						answer,
+						correct
+					};
+
+					this->imgs[file] = tmp;
+					
+					if (this->clsInfo.find(cls) == clsInfo.end()) {
+						this->clsInfo.insert(std::pair<string, Cls>(cls, { cls, 0, {} }));
+					}
+					this->clsInfo[cls].size++;
+					this->clsInfo[cls].file.push_back(file);
+				}
+
+				// write clsInfo to db
+				std::string clsInfoCol = this->database + "." + this->dbName + "_ClsInfo";
+				for (auto it = this->clsInfo.begin(); it != this->clsInfo.end(); ++it) {
+					BSONObjBuilder bObj;
+					auto info = it->second;
+					bObj.append("name", info.name)
+						.append("size", info.size);
+					BSONArrayBuilder arr;
+					for (auto const& d : info.file) { arr.append(d); }
+					bObj.append("file", arr.arr());
+					this->connection.insert(clsInfoCol, bObj.obj());
+				}
+
+			}
+
+			std::map<string, ClsStat> clsStat;
+			std::string clsStatCol = this->database + "." + this->dbName + "_ImgTestClsStat";
+			for (int i = 0; i < data->images_size(); i++) {
+				auto file = data->images(i).file_name();
+				auto cls = data->images(i).class_name();
+				auto label = data->images(i).label_id();
+				auto answer = data->images(i).answer();
+				int err = 0;
+				if (label != answer) err = 1;
+				this->imgs[file].iter.push_back(data->iteration());
+				this->imgs[file].answer.push_back(answer);
+				this->imgs[file].correct.push_back(1 - err);
+
+
+				// write ImgTestClsStat
+				if (clsStat.find(cls) == clsStat.end()) {
+					clsStat.insert(std::pair<string, ClsStat>(cls, { cls, data->iteration(), 0, {}, {} }));
+				}
+				clsStat[cls].testError += err;
+			}
+			// calc outvalue
+			int step = 100;
+			for (auto it = this->clsInfo.begin(); it != this->clsInfo.end(); ++it) {
+				auto info = it->second;
+				clsStat[info.name].testError /= info.size;
+				// calc abLeft
+				vector<int> abLeft(step, 0);
+				for (auto &filename : info.file) {
+					auto img = this->imgs[filename];
+					int ci = img.correct.size() - 1;
+					if (ci - 1 >= 0 && img.correct[ci - 1] != img.correct[ci]) {
+						int k = ci - 1;
+						int left = std::max(0, ci - step);
+						while (k >= left) {
+							if (img.correct[k] == img.correct[ci]) break;
+							abLeft[ci - k - 1] += 1;
+							k--;
+						}
+					}
+				}
+
+				BSONObjBuilder bObj;
+				bObj.append("cls", info.name)
+					.append("iter", clsStat[info.name].iter)
+					.append("testError", clsStat[info.name].testError);
+				BSONArrayBuilder arr;
+				for (auto const& d : abLeft) { arr.append(d); }
+				bObj.append("abLeft", arr.arr());
+
+				// add abLeft
+				this->connection.insert(clsStatCol, bObj.obj());
+			}
+
+
+
+
+			// write ImgTestData
+			BulkOperationBuilder bulk = this->connection.initializeUnorderedBulkOp(col);
+
+			for (auto iter = imgs.begin(); iter != imgs.end(); iter++) {
+				BSONObjBuilder bObj;
+				auto o = iter->second;
+				bObj.append("file", o.file)
+					.append("cls", o.cls)
+					.append("label", o.label);
+
+				BSONArrayBuilder arrIter;
+				for (auto const& d : o.iter) { arrIter.append(d); }
+				BSONArrayBuilder arrAnswer;
+				for (auto const& d : o.answer) { arrAnswer.append(d); }
+
+				bObj.append("iter", arrIter.arr())
+					.append("answer", arrAnswer.arr());
+				if (first) {
+					bulk.insert(bObj.obj());
+				} else {
+					bulk.find((BSONObjBuilder() << "file" << o.file).obj()).replaceOne(bObj.obj());
+				}
+			}
+			mongo::WriteResult rs;
+			bulk.execute(0, &rs);
+
+		};
+
+
 		void DB::importTestImgInfo(std::map<std::string, int> &map_label, int batchsize, std::string colName) {
-			// do something
 			std::string col = this->database + "." + this->dbName + "_" + colName;
 			Images *data = this->imgData;
 			for (int bs = 0, i = 0; i < data->images_size(); i += batchsize) {
@@ -428,35 +553,6 @@ namespace analyzer_tools {
 			BSONObj o = bObj.obj();
 			this->connection.insert(col, o);
 		}
-		
-		void DB::importRecorderInfo() {
-			std::cout << "Importing records to " << this->dbName << std::endl;
-			std::string col;
-			Recorder *data = this->rData;
-
-			for (int i = 0; i < data->tuple_size(); i++) {
-				MAP_TYPE_RECORD::iterator iterRecord = mapTypeRecord.find(data->tuple(i).type());
-				if (iterRecord == mapTypeRecord.end()) {
-					std::cout << data->tuple(i).type() << " Wrong TYPE_RECORD_MAP" << std::endl;
-					// return;
-				}
-				else {
-					col = this->database + "." + this->dbName + "_" + iterRecord->second;
-
-					BSONObjBuilder bObj;
-					bObj.append("iter", data->tuple(i).iteration())
-						.append("value", data->tuple(i).value());
-					BSONObj o = bObj.obj();
-					if ((i + 1) % 10000 == 0) {
-						std::cout << i + 1 << "tuples have been inserted successfully" << std::endl;
-					}
-					this->connection.insert(col, o);
-				}
-
-			}
-			std::cout << data->tuple_size() << "tuples have been inserted successfully" << std::endl;
-		}
-
 
 		void DB::createIndexes() {
 
@@ -522,6 +618,20 @@ namespace analyzer_tools {
 			this->connection.createIndex(col, fromjson("{iter:1}"));
 			this->connection.createIndex(col, fromjson("{iter:1, batch:1}"));
 
+			col = this->database + "." + this->dbName + "_ImgTestData";
+			std::cout << "Creating Index on " << col << std::endl;
+			this->connection.createIndex(col, fromjson("{file:1}"));
+			this->connection.createIndex(col, fromjson("{cls:1}"));
+
+			col = this->database + "." + this->dbName + "_ClsInfo";
+			std::cout << "Creating Index on " << col << std::endl;
+			this->connection.createIndex(col, fromjson("{name:1}"));
+
+			col = this->database + "." + this->dbName + "_ImgTestClsStat";
+			std::cout << "Creating Index on " << col << std::endl;
+			this->connection.createIndex(col, fromjson("{iter:1}"));
+			this->connection.createIndex(col, fromjson("{cls:1}"));
+
 		}
 
 		void DB::deleteDB() {
@@ -569,6 +679,7 @@ namespace analyzer_tools {
 			this->connection.dropCollection(col);
 			col = this->database + "." + this->dbName + "_" + "ImgTestInfo";
 			this->connection.dropCollection(col);
+
 		}
 
 		void DB::fetchTestIterSet(std::vector<int>& v) {

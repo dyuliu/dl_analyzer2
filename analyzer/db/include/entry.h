@@ -10,13 +10,20 @@
 #include <mongo/client/dbclient.h>
 #include <libanalyzer/include/proto/analyzer_proto.pb.h>
 #include <libanalyzer/include/info/info.h>
-#include <libanalyzer/include/recorder/recorder.h>
+
+using mongo::BSONArrayBuilder;
+using mongo::BSONArray;
+using mongo::BSONElement;
+using mongo::BSONObj;
+using mongo::BSONObjBuilder;
+using mongo::BulkOperationBuilder;
+using mongo::DBClientCursor;
+using mongo::fromjson;
 
 namespace analyzer_tools {
 	namespace db {
 
 		using analyzer_proto::Info;
-		using analyzer_proto::Recorder;
 		using analyzer_proto::Images;
 		using std::string;
 		using std::vector;
@@ -30,6 +37,20 @@ namespace analyzer_tools {
 			vector<int> iter;
 			vector<int> answer;
 			vector<int> correct;
+		};
+
+		struct Cls {
+			string name;
+			int size;
+			vector<string> file;
+		};
+
+		struct ClsStat {
+			string cls;
+			int iter;
+			double testError;
+			vector<int> abLeft;
+			vector<int> abRight;
 		};
 
 		class DB {
@@ -56,7 +77,7 @@ namespace analyzer_tools {
 
 			void bindImgInfo(Images *d);
 
-			void bindRecorder(Recorder *d);
+			// void bindRecorder(Recorder *d);
 
 			/**
 			Import a selected stat into DB
@@ -98,6 +119,8 @@ namespace analyzer_tools {
 			void importImgInfo(std::string colName = "ImgTrainInfo");
 
 			void importTestImgInfo(std::map<std::string, int> &map_label, int batchsize = 1000, std::string colName = "ImgTestInfo");
+			void importTestImgData(bool first, std::string colName = "ImgTestData");
+			void importTestImgStat(bool first, std::string colName = "ImgTestStat");
 
 			/**
 			Import all stats and layer attrs
@@ -122,14 +145,8 @@ namespace analyzer_tools {
 			/**
 			Import recorder info, e.g., error rate.
 			*/
-			void importRecorderInfo();
-
 			void importRecorderInfo(int iteration, string type, float value);
 
-			/**
-			Import cluster info
-			*/
-			void importClusterInfo(analyzer::Infos::TYPE_CLUSTER clusterName, analyzer::Infos::TYPE_CONTENT contentName, unsigned int maxlayer = 2, std::string colName = "ClusterInfo");
 
 			/**
 			Create Indexes for stat, statseq, and recorder collections
@@ -149,7 +166,9 @@ namespace analyzer_tools {
 			std::string database;
 			Info *iData;
 			Images *imgData;
-			Recorder *rData;
+			std::map<string, Img> imgs;
+			std::map<string, Cls> clsInfo;
+			std::map<string, BSONObjBuilder> imgsBson;
 		};
 
 	}

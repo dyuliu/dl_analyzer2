@@ -14,7 +14,6 @@
     <ClInclude Include="include\info\info.h" />
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\proto\analyzer_proto.pb.h" />
-    <ClInclude Include="include\recorder\recorder.h" />
     <ClInclude Include="include\utils\color_print.h" />
     <ClInclude Include="include\utils\filestream.h" />
     <ClInclude Include="include\utils\filesystem.h" />
@@ -23,14 +22,10 @@
     <ClCompile Include="include\proto\analyzer_proto.pb.cc" />
     <ClCompile Include="src\info\info.cpp" />
     <ClCompile Include="src\info\info_data.cpp" />
-    <ClCompile Include="src\info\info_distance.cpp" />
     <ClCompile Include="src\info\info_print.cpp" />
     <ClCompile Include="src\info\info_seq.cpp" />
     <ClCompile Include="src\info\info_stat.cpp" />
     <ClCompile Include="src\info\info_stat_kernel.cpp" />
-    <ClCompile Include="src\recorder\parse_caffepro.cpp" />
-    <ClCompile Include="src\recorder\recorder.cpp" />
-    <ClCompile Include="src\recorder\recorder_data.cpp" />
     <ClCompile Include="src\utils\filesystem.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

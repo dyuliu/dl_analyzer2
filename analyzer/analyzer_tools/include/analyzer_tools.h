@@ -24,8 +24,6 @@ namespace analyzer_tools {
 	using analyzer::Infos;
 	using analyzer_proto::Info;
 	using analyzer_proto::Images;
-	
-	void print();
 
 	bool save_image(char *data, int length, string dir_name, string file_name);
 
@@ -44,7 +42,7 @@ namespace analyzer_tools {
 
 
 	public:
-		Analyzer(string db_name, string model_name, string host = "localhost:27017");
+		Analyzer(string db_name, string model_name, string host = "localhost:27017", string layer_hierarchy_file = "cifar.json");
 		~Analyzer();
 
 		bool deal_rec_info(int iteration, RECORD_TYPE type, float value);
@@ -58,7 +56,9 @@ namespace analyzer_tools {
 		bool first_parainfo, first_imginfo;
 		std::shared_ptr<Infos> pre_info;
 		std::map<std::string, int> map_img_label;
-		std::map<RECORD_TYPE, std::string> recType;
+		std::map<RECORD_TYPE, std::string> rec_type;
+		std::map <std::string, std::vector<int>> layer_tree;
+		std::map <std::string, std::vector<string>> layer_tree_name;
 	};
 	
 }

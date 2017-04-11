@@ -51,24 +51,9 @@ namespace analyzer {
 			END
 		};
 
-		enum class TYPE_DISTANCE : unsigned int {
-			EUCLIDEAN		= 0U,
-			COSINE			= 1U,
-			MANHATTAN		= 2U,
-			CORRELATION		= 3U,
-			EUCLIDEAN_NORM	= 4U,
-			COSINE_NORM		= 5U,
-			END
-		};
-
 		enum class TYPE_CONTENT : unsigned int {
 			GRAD	= 0U,
 			WEIGHT	= 1U,
-			END
-		};
-
-		enum class TYPE_CLUSTER : unsigned int {
-			KMEANS	= 0U,
 			END
 		};
 
@@ -90,9 +75,7 @@ namespace analyzer {
 
 		// get
 		unsigned int index(TYPE_STAT stat_type, TYPE_CONTENT data_content);
-		unsigned int index(TYPE_DISTANCE distance_type, TYPE_CONTENT data_content);
 		unsigned int index(TYPE_SEQ seq_type, TYPE_CONTENT data_content);
-		unsigned int index(TYPE_CLUSTER cluster_type, TYPE_CONTENT data_content);
 		unsigned int index(TYPE_STAT_KERNEL stat_kernel_type, TYPE_CONTENT data_content);
 
 		// string to type
@@ -103,11 +86,6 @@ namespace analyzer {
 		void compute_stat(TYPE_STAT stat_type, TYPE_CONTENT data_content);
 		void compute_stat_list(std::vector<TYPE_STAT> stat_list, TYPE_CONTENT data_content);
 		void compute_stat_all(TYPE_CONTENT data_content);
-
-		// distance
-		void compute_dist(TYPE_DISTANCE distrance_type, TYPE_CONTENT data_content, Infos &other);
-		void compute_dist_list(std::vector<TYPE_DISTANCE> const distance_list, TYPE_CONTENT data_content, Infos &other);
-		void compute_dist_all(TYPE_CONTENT data_content, Infos &other);
 
 		// seq
 		void compute_seq(TYPE_SEQ seq_type, TYPE_CONTENT data_content);
@@ -135,9 +113,7 @@ namespace analyzer {
 		void print_file_info();
 		void print_conv_layer_info();
 		void print_stat_info(TYPE_CONTENT data_content);
-		void print_distance_info(TYPE_CONTENT data_content);
 		void print_seq_info(TYPE_CONTENT data_content);
-		void print_cluster_info(TYPE_CONTENT data_content);
 
 	// Interface
 	public:
@@ -145,12 +121,9 @@ namespace analyzer {
 		Info& get() { return info; }
 
 		// constructor
-		Infos();
-		Infos(std::string filename);
-		Infos(Info &info_);
+		Infos(std::string filename, std::map <std::string, std::vector<int>>& layer_tree_);
+		Infos(Info &info_, std::map <std::string, std::vector<int>>& layer_tree_);
 
-		// for rank, it will be depleted in future
-		Infos(std::string path, int rank_size);
 
 		// copy
 		void copy_hyperparam(Infos &other, TYPE_CONTENT content_type, HyperParam hp);
@@ -164,14 +137,11 @@ namespace analyzer {
 		// dump info
 		Info info;
 
-		std::map<TYPE_DISTANCE, std::string> name_distance_type;
 		std::map<TYPE_STAT, std::string> name_stat_type;
 		std::map<TYPE_CONTENT, std::string> name_content_type;
 		std::map<TYPE_SEQ, std::string> name_seq_type;
-		std::map<TYPE_CLUSTER, std::string> name_cluster_type;
 		std::map<TYPE_STAT_KERNEL, std::string> name_stat_kernel_type;
-		std::map<std::string, std::vector<int>> map_layers;
-
+		std::map<std::string, std::vector<int>>& map_layers;
 
 	};
 }
